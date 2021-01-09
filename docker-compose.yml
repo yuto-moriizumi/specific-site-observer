@@ -1,0 +1,31 @@
+version: "3"
+services:
+  front:
+    build: ./front/
+    container_name: front-container
+    volumes:
+      - ./front:/usr/src/app/react-sample
+    command: sh -c "cd react-sample && yarn start"
+    ports:
+      - "3000:3000"
+  api:
+    image: node:14.15.4-buster-slim
+    container_name: api-container
+    volumes:
+      - ./api/:/usr/src/
+    ports:
+      - "3001:3000"
+    environment:
+      - TZ=Asia/Tokyo
+    command: sh -c "cd usr/src && yarn start"
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:13.1-alpine
+    container_name: db-container
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
