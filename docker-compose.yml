@@ -4,8 +4,9 @@ services:
     image: node:14.15.4-buster-slim
     container_name: front-container
     volumes:
-      - ./front:/usr/src/
-    command: sh -c "cd usr/src && yarn start"
+      - ./front:/usr/src
+      - front_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
+    command: sh -c "cd usr/src && yarn install && yarn start"
     ports:
       - "3000:3000"
   api:
@@ -29,3 +30,5 @@ services:
       POSTGRES_PASSWORD: mypassword
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
+volumes:
+  front_modules:
