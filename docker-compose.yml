@@ -14,11 +14,12 @@ services:
     container_name: api-container
     volumes:
       - ./api/:/usr/src/
+      - api_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
     ports:
       - "3001:3000"
     environment:
       - TZ=Asia/Tokyo
-    command: sh -c "cd usr/src && yarn start"
+    command: sh -c "cd usr/src && yarn install && yarn start"
     depends_on:
       - postgres
   postgres:
@@ -32,3 +33,4 @@ services:
       - ./postgresql/data:/var/lib/postgresql/data
 volumes:
   front_modules:
+  api_modules:
