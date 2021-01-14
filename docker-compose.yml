@@ -6,8 +6,8 @@ services:
     volumes:
       - ./front:/usr/src
       - front_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
-    working_dir: "usr/src"
-    command: sh -c "cd usr/src && yarn install && yarn start"
+    working_dir: "/usr/src"
+    command: sh -c "yarn install && yarn start"
     ports:
       - "3000:3000"
   api:
@@ -16,12 +16,12 @@ services:
     volumes:
       - ./api/:/usr/src/
       - api_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
-    working_dir: "usr/src"
+    working_dir: "/usr/src"
     ports:
       - "3001:3000"
     environment:
       - TZ=Asia/Tokyo
-    command: sh -c "cd usr/src && yarn install && yarn start"
+    command: sh -c "yarn install && yarn start"
     depends_on:
       - postgres
   postgres:
