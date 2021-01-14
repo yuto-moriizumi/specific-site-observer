@@ -1,11 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import React from "react";
+import logo from "./logo.svg";
+import "./App.css";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import Index from "./views/Index";
 
 function App() {
   return (
-    <div className="App">
+    <React.Fragment>
+      <header>
+        <h1>Specific Site Observer</h1>
+      </header>
+      <Router>
+        <Route exact path="/" component={Index}></Route>
+      </Router>
+    </React.Fragment>
+  );
+}
+
+export default App;
+
+{
+  /* <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
@@ -20,8 +35,5 @@ function App() {
           Learn React
         </a>
       </header>
-    </div>
-  );
+    </div> */
 }
-
-export default App;
