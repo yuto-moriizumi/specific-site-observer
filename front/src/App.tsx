@@ -1,17 +1,30 @@
 import React from "react";
-import logo from "./logo.svg";
 import "./App.css";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Link, Route } from "react-router-dom";
 import Index from "./views/Index";
+import { Badge, Button, Nav, Navbar } from "react-bootstrap";
+import MyPage from "./views/MyPage";
 
 function App() {
   return (
     <React.Fragment>
-      <header>
-        <h1>Specific Site Observer</h1>
-      </header>
       <Router>
+        <Navbar bg="light" expand="lg">
+          <Navbar.Brand>
+            <Link to="/" className="h2">
+              Specific Site Observer
+            </Link>
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="ml-auto h1">
+              <Badge variant="primary">Your Name</Badge>
+              <Button size="lg">Login</Button>
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
         <Route exact path="/" component={Index}></Route>
+        <Route path="/mypage" component={MyPage}></Route>
       </Router>
     </React.Fragment>
   );
