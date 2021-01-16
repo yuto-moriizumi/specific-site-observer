@@ -34,7 +34,7 @@ class App extends React.Component<Props, {}> {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ml-auto">
               <Nav.Item>
-                <Link to="/api">API</Link>
+                <Link to="/exapi">API</Link>
               </Nav.Item>
               {this.props.auth0.isAuthenticated ? (
                 <>
@@ -53,7 +53,7 @@ class App extends React.Component<Props, {}> {
           </Navbar.Collapse>
         </Navbar>
         <Route exact path="/" component={Index}></Route>
-        <Route path="/api" component={ExternalApi}></Route>
+        <Route path="/exapi" component={ExternalApi}></Route>
         <ProtectedRoute path="/mypage" component={MyPage}></ProtectedRoute>
       </>
     );

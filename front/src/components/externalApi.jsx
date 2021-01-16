@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
+const AUDIENCE = process.env.AUTH0_AUDIENCE;
+
 const ExternalApi = () => {
   const [message, setMessage] = useState("");
   const serverUrl = process.env.REACT_APP_SERVER_URL;
@@ -9,8 +11,14 @@ const ExternalApi = () => {
 
   const callApi = async () => {
     try {
-      const response = await fetch(`${serverUrl}/api/public/`);
-
+      const response = await fetch(
+        new Request(`${serverUrl}/api/public/`, {
+          method: "GET",
+          headers: new Headers({
+            Accept: "application/json",
+          }),
+        })
+      );
       const responseData = await response.json();
 
       setMessage(responseData.message);
@@ -21,7 +29,10 @@ const ExternalApi = () => {
 
   const callSecureApi = async () => {
     try {
-      const token = await getAccessTokenSilently();
+      const token = await getAccessTokenSilently({
+        audience: AUDIENCE,
+        scope: "read:current_user",
+      });
 
       const response = await fetch(`${serverUrl}/api/private/`, {
         headers: {

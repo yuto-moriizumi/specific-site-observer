@@ -3,8 +3,7 @@ import Express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
-import jwt from "express-jwt";
-import jwks from "jwks-rsa";
+import cors from "cors";
 
 import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
@@ -21,9 +20,11 @@ app.use(Express.json());
 app.use(Express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(Express.static(path.join(__dirname, "public")));
+app.use(cors({ origin: "http://localhost:4000" }));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/api", apiRouter);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => next(createError(404)));
@@ -46,25 +47,4 @@ app.use(
   }
 );
 
-//JSON API
-const jwtCheck = jwt({
-  secret: jwks.expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: "https://dev-eq2ig8u3.jp.auth0.com/.well-known/jwks.json",
-  }),
-  audience: "https://example.com",
-  issuer: "https://dev-eq2ig8u3.jp.auth0.com/",
-  algorithms: ["RS256"],
-});
-
-app.use(jwtCheck);
-app.use("/api", apiRouter);
-
-// app.get("/api/messages/protected-message", function (req, res) {
-//   res.send("Secured Resource");
-// });
-
 export = app;
-// export default app;

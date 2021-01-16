@@ -10,7 +10,10 @@ services:
     working_dir: "/usr/src"
     command: sh -c "yarn install && yarn start"
     ports:
-      - "3000:3000"
+      - "4000:4000"
+    # networks:
+    #   - specific-site-observer
+    # network_mode: host
   api:
     image: node:14.15.4-buster-slim
     container_name: api-container
@@ -20,12 +23,15 @@ services:
       - api_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
     working_dir: "/usr/src"
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
       - TZ=Asia/Tokyo
     command: sh -c "yarn install && yarn start"
     depends_on:
       - postgres
+    # networks:
+    #   - specific-site-observer
+    # network_mode: host
   postgres:
     image: postgres:13.1-alpine
     container_name: db-container
@@ -35,6 +41,12 @@ services:
       POSTGRES_PASSWORD: mypassword
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
+    # networks:
+    #   - specific-site-observer
+    # network_mode: host
 volumes:
   front_modules:
   api_modules:
+# networks:
+#   specific-site-observer:
+#     driver: host
