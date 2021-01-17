@@ -1,9 +1,15 @@
+import dotenv from "dotenv";
+//envファイルの読み込み
+const result = dotenv.config({ debug: true });
+console.log(result.parsed);
+
 import createError from "http-errors";
 import Express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import cors from "cors";
+import helmet from "helmet";
 
 import indexRouter from "./routes/index";
 import usersRouter from "./routes/users";
@@ -16,11 +22,12 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 app.use(logger("dev"));
-app.use(Express.json());
-app.use(Express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(Express.static(path.join(__dirname, "public")));
-app.use(cors({ origin: "http://localhost:4000" }));
+// app.use(Express.json());
+// app.use(Express.urlencoded({ extended: false }));
+// app.use(cookieParser());
+// app.use(Express.static(path.join(__dirname, "public")));
+app.use(helmet());
+app.use(cors({ origin: process.env.CLIENT_ORIGIN_URL }));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);

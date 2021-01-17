@@ -8,6 +8,7 @@ import LogoutButton from "./components/logoutButton";
 import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
 import ProtectedRoute from "./protected-route";
 import ExternalApi from "./components/externalApi";
+import { ExternalApiComponent } from "./components/ExternalApi2";
 
 type Props = {
   auth0: Auth0ContextInterface;
