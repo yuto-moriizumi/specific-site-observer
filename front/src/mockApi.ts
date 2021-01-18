@@ -1,6 +1,9 @@
 import axios from "axios";
 import AxiosMockAdapter from "axios-mock-adapter";
 
+const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+if (!SERVER_URL) new Error("SERVER_URL must be specified");
+
 export default function enableMock() {
   const mockAxios = new AxiosMockAdapter(axios, { delayResponse: 500 });
   type Page = {
@@ -32,7 +35,7 @@ export default function enableMock() {
     },
   ];
 
-  mockAxios.onGet("/api/pages/").reply(() => {
+  mockAxios.onGet(`${SERVER_URL}/api/pages`).reply(() => {
     return [
       200,
       {
@@ -44,7 +47,7 @@ export default function enableMock() {
       },
     ];
   });
-  mockAxios.onGet("/api/subscriptions/").reply(() => {
+  mockAxios.onGet(`${SERVER_URL}/api/subscriptions`).reply(() => {
     return [
       200,
       {
@@ -52,8 +55,14 @@ export default function enableMock() {
       },
     ];
   });
-  mockAxios.onPost("/api/subscriptions/").reply(() => [201, null]);
-  mockAxios.onPost("/api/subscriptions/new/").reply(() => [200, null]);
-  mockAxios.onPost("/api/subscriptions/rank/").reply(() => [200, null]);
-  mockAxios.onPost("/api/subscriptions/delete").reply(() => [200, null]);
+  mockAxios.onPost(`${SERVER_URL}/api/subscriptions`).reply(() => [201, null]);
+  mockAxios
+    .onPost(`${SERVER_URL}/api/subscriptions/new`)
+    .reply(() => [200, null]);
+  mockAxios
+    .onPost(`${SERVER_URL}/api/subscriptions/rank`)
+    .reply(() => [200, null]);
+  mockAxios
+    .onPost(`${SERVER_URL}/api/subscriptions/delete`)
+    .reply(() => [200, null]);
 }

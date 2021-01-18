@@ -39,8 +39,12 @@ type State = {
 type Props = {
   auth0: Auth0ContextInterface;
 };
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+const AUDIENCE = process.env.REACT_APP_AUTH0_AUDIENCE;
+if (!(SERVER_URL && AUDIENCE)) new Error("env invalid");
+
 class Index extends React.Component<Props, State> {
-  private AUDIENCE = process.env.REACT_APP_AUTH0_AUDIENCE;
   constructor(props: any) {
     super(props);
     this.state = {
@@ -54,10 +58,10 @@ class Index extends React.Component<Props, State> {
 
   private async getSubscriptions() {
     const token = await this.props.auth0.getAccessTokenSilently({
-      audience: this.AUDIENCE,
+      audience: AUDIENCE,
     });
     axios
-      .get("/api/subscriptions/", {
+      .get(`${SERVER_URL}/api/subscriptions`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -82,12 +86,12 @@ class Index extends React.Component<Props, State> {
   private async addSubscription() {
     if (!this.isValidUrl(this.state.newCardUrl)) return;
     const token = await this.props.auth0.getAccessTokenSilently({
-      audience: this.AUDIENCE,
+      audience: AUDIENCE,
     });
     this.handleClose();
     axios
       .post(
-        "/api/subscriptions/",
+        `${SERVER_URL}/api/subscriptions`,
         {
           url: this.state.newCardUrl,
           star: this.state.newCardRate,
@@ -110,11 +114,11 @@ class Index extends React.Component<Props, State> {
   //既読未読を切り替える
   private async switchRead(index: number, has_new: boolean) {
     const token = await this.props.auth0.getAccessTokenSilently({
-      audience: this.AUDIENCE,
+      audience: AUDIENCE,
     });
     axios
       .post(
-        "/api/subscriptions/new/",
+        `${SERVER_URL}/api/subscriptionsnew/`,
         {
           url: this.state.subscriptions[index].url,
           has_new: has_new,
@@ -149,11 +153,11 @@ class Index extends React.Component<Props, State> {
   private async onClickDelete(index: number) {
     if (!window.confirm("本当に削除しますか?")) return;
     const token = await this.props.auth0.getAccessTokenSilently({
-      audience: this.AUDIENCE,
+      audience: AUDIENCE,
     });
     axios
       .post(
-        "/api/subscriptions/delete",
+        `${SERVER_URL}/api/subscriptionsdelete`,
         {
           url: this.state.subscriptions[index].url,
         },
@@ -185,7 +189,7 @@ class Index extends React.Component<Props, State> {
 
   private onRateChange(index: number, rate: number) {
     axios
-      .post("/api/subscriptions/rank/", {
+      .post(`${SERVER_URL}/api/subscriptionsrank/`, {
         url: this.state.subscriptions[index].url,
         rank: rate,
       })

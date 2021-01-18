@@ -41,8 +41,7 @@ app.use(
   (
     err: any,
     req: Express.Request,
-    res: Express.Response,
-    next: Express.NextFunction
+    res: Express.Response
   ) => {
     // set locals, only providing error in development
     res.locals.message = err.message;

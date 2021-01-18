@@ -18,12 +18,16 @@ interface State {
     updated: string;
   }[];
 }
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+if (!SERVER_URL) new Error("SERVER_URL must be specified");
+
 export default class Index extends React.Component<{}, State> {
   constructor(props: any) {
     super(props);
     this.state = { pages: [] };
     axios
-      .get("/api/pages/")
+      .get(`${SERVER_URL}/api/pages`)
       .then((res) => this.setState({ pages: res.data.pages }))
       .catch((err) => console.log(err));
   }
