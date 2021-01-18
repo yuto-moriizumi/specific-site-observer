@@ -9,6 +9,7 @@ export default function enableMock() {
     img: string;
     updated: string;
     rating?: number;
+    has_new?: boolean;
   };
   const PAGES: Page[] = [
     {
@@ -18,6 +19,7 @@ export default function enableMock() {
         "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
       updated: "2018-10-24 12:23:45",
       rating: 4,
+      has_new: true,
     },
     {
       url: "https://www.yahoo.co.jp/",
@@ -26,6 +28,7 @@ export default function enableMock() {
         "https://lh3.googleusercontent.com/proxy/exwGGKh-VW_4SThSwWZwKmGLfMVq0K9C8YmC_X6I-GENSfj05dJp8UVfCOLV87vptGGqhyRWqLKxo18cCSn93QARfk74Zw793LZSvg",
       updated: "2019-10-24 12:23:45",
       rating: 5,
+      has_new: false,
     },
   ];
 
@@ -35,6 +38,7 @@ export default function enableMock() {
       {
         pages: PAGES.map((page) => {
           delete page.rating; //レーティングはページそのものに登録されているわけではないので削除
+          delete page.has_new; //既読管理はページそのものに登録されているわけではないので削除
           return page;
         }),
       },
@@ -44,11 +48,12 @@ export default function enableMock() {
     return [
       200,
       {
-        pages: PAGES,
+        subscriptions: PAGES,
       },
     ];
   });
   mockAxios.onPost("/api/subscriptions/").reply(() => [201, null]);
-  mockAxios.onPatch("/api/subscriptions/").reply(() => [200, null]);
-  mockAxios.onDelete("/api/subscriptions/").reply(() => [200, null]);
+  mockAxios.onPost("/api/subscriptions/new/").reply(() => [200, null]);
+  mockAxios.onPost("/api/subscriptions/rank/").reply(() => [200, null]);
+  mockAxios.onPost("/api/subscriptions/delete").reply(() => [200, null]);
 }

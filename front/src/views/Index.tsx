@@ -45,7 +45,7 @@ export default class Index extends React.Component<{}, State> {
           <h2>更新情報</h2>
           <CardDeck>
             {this.state.pages.map((page) => (
-              <Col>
+              <Col key={page.url}>
                 <a href={page.url} target="_blank" rel="noreferrer">
                   <Card>
                     <Card.Img variant="top" src={page.img} />
