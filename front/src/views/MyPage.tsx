@@ -8,6 +8,15 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 import Rate from "rc-rate";
 
+type State = {
+  pages: {
+    url: string;
+    title: string;
+    img: string;
+    updated: string;
+    rating: number;
+  }[];
+};
 export default class Index extends React.Component {
   render() {
     return (

@@ -1,14 +1,13 @@
 import React from "react";
-import { BrowserRouter as Router, Link, Route } from "react-router-dom";
+import { Link, Route } from "react-router-dom";
 import Index from "./views/Index";
-import { Nav, Navbar, Image, Col, Row, Container } from "react-bootstrap";
+import { Nav, Navbar, Image } from "react-bootstrap";
 import MyPage from "./views/MyPage";
-import LoginButton from "./components/loginButton";
-import LogoutButton from "./components/logoutButton";
 import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
-import ProtectedRoute from "./protected-route";
-import ExternalApi from "./components/externalApi";
-import { ExternalApiComponent } from "./components/ExternalApi2";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LoginButton from "./components/LoginButton";
+import LogoutButton from "./components/LogoutButton";
+import ExternalApi from "./components/ExternalApi";
 
 type Props = {
   auth0: Auth0ContextInterface;
@@ -20,17 +19,11 @@ class App extends React.Component<Props, {}> {
     return (
       <>
         <Navbar bg="light" expand="sm">
-          {/* <Container fluid>
-            <Row>
-              <Col xs={12}> */}
           <Navbar.Brand>
             <Link to="/" className="h2">
               Specific Site Observer
             </Link>
           </Navbar.Brand>
-          {/* </Col>
-            </Row>
-          </Container> */}
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ml-auto">

@@ -8,8 +8,25 @@ import {
   Jumbotron,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-export default class Index extends React.Component {
+interface State {
+  pages: {
+    url: string;
+    title: string;
+    img: string;
+    updated: string;
+  }[];
+}
+export default class Index extends React.Component<{}, State> {
+  constructor(props: any) {
+    super(props);
+    this.state = { pages: [] };
+    axios
+      .get("/api/pages/")
+      .then((res) => this.setState({ pages: res.data.pages }))
+      .catch((err) => console.log(err));
+  }
   render() {
     return (
       <React.Fragment>
@@ -27,26 +44,19 @@ export default class Index extends React.Component {
         <Container>
           <h2>更新情報</h2>
           <CardDeck>
-            <Col>
-              <Card>
-                <Card.Img variant="top" src="holder.js/100px180" />
-                <Card.Body>
-                  <Card.Title>Taro Tanaka</Card.Title>
-                  <Card.Subtitle>GO TO PARK! (2019)</Card.Subtitle>
-                  <Card.Text>2021/10/10</Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col>
-              <Card>
-                <Card.Img variant="top" src="holder.js/100px180" />
-                <Card.Body>
-                  <Card.Title>Taro Tanaka</Card.Title>
-                  <Card.Subtitle>GO TO PARK! (2019)</Card.Subtitle>
-                  <Card.Text>2021/10/10</Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
+            {this.state.pages.map((page) => (
+              <Col>
+                <a href={page.url} target="_blank" rel="noreferrer">
+                  <Card>
+                    <Card.Img variant="top" src={page.img} />
+                    <Card.Body>
+                      <Card.Title>{page.title}</Card.Title>
+                      <Card.Text>{page.updated}</Card.Text>
+                    </Card.Body>
+                  </Card>
+                </a>
+              </Col>
+            ))}
           </CardDeck>
         </Container>
       </React.Fragment>

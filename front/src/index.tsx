@@ -5,8 +5,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "rc-rate/assets/index.css";
 import App from "./App";
 import { BrowserRouter as Router } from "react-router-dom";
-import Auth0ProviderWithHistory from "./auth0-provider-with-history";
+import Auth0ProviderWithHistory from "./components/Auth0ProviderWithHistory";
+import enableMock from "./mockApi";
 
+enableMock();
 ReactDOM.render(
   <React.StrictMode>
     <Router>
