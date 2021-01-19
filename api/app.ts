@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 //envファイルの読み込み
-const result = dotenv.config({ debug: true });
+const result = dotenv.config();
 console.log(result.parsed);
 
 import createError from "http-errors";
@@ -23,20 +23,14 @@ app.use("/api", apiRouter);
 app.use((req, res, next) => next(createError(404)));
 
 // error handler
-app.use(
-  (
-    err: any,
-    req: Express.Request,
-    res: Express.Response
-  ) => {
-    // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get("env") === "development" ? err : {};
+app.use((err: any, req: Express.Request, res: Express.Response) => {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
 
-    // render the error page
-    res.status(err.status || 500);
-    res.render("error");
-  }
-);
+  // render the error page
+  res.status(err.status || 500);
+  res.render("error");
+});
 
 export = app;

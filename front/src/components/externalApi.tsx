@@ -20,7 +20,7 @@ class ExternalApi extends React.Component<Props, State> {
     const callApi = async () => {
       try {
         const response = await fetch(
-          new Request(`${serverUrl}/api/public/`, {
+          new Request(`${serverUrl}/api/pages/`, {
             method: "GET",
             headers: new Headers({
               Accept: "application/json",
@@ -28,6 +28,7 @@ class ExternalApi extends React.Component<Props, State> {
           })
         );
         const responseData = await response.json();
+        console.log(responseData);
 
         this.setState({ message: responseData.message });
       } catch (error) {
@@ -47,7 +48,7 @@ class ExternalApi extends React.Component<Props, State> {
         // const token = await this.props.auth0.getAccessTokenWithPopup();
         console.log("TOKEN:" + token);
 
-        const response = await fetch(`${serverUrl}/api/private/`, {
+        const response = await fetch(`${serverUrl}/api/subscriptions/`, {
           headers: {
             // authorization: `Bearer ${id_token.__raw}`,
             authorization: `Bearer ${token}`,
@@ -57,6 +58,7 @@ class ExternalApi extends React.Component<Props, State> {
         });
 
         const responseData = await response.json();
+        console.log(responseData);
 
         this.setState({ message: responseData.message });
       } catch (error) {
