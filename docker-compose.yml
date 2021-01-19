@@ -11,9 +11,6 @@ services:
     command: sh -c "yarn install && yarn start"
     ports:
       - "4000:4000"
-    # networks:
-    #   - specific-site-observer
-    # network_mode: host
   api:
     image: node:14.15.4-buster-slim
     container_name: api-container
@@ -29,32 +26,32 @@ services:
     command: sh -c "yarn install && yarn start"
     depends_on:
       - db
-    # networks:
-    #   - specific-site-observer
-    # network_mode: host
   db:
     image: mysql:8
     container_name: db-container
     ports:
-      - "5432:5432"
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: docker
-      # MYSQL_DATABASE: mydb
-      # MYSQL_USER: docker
-      # MYSQL_PASSWORD: docker
       TZ: "Asia/Tokyo"
     volumes:
-      - ./db/data:/var/lib/mysql
-      - ./db/sql:/docker-entrypoint-initdb.d
-      # - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
-      # - ./db/init-mysql.sh:/init-mysql.sh
-    # command: sh -c "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci && ./init-mysql.sh"
-    # networks:
-    #   - specific-site-observer
-    # network_mode: host
+      - ./db/data:/var/lib/mysql #データ永続化
+      - ./db/sql:/docker-entrypoint-initdb.d #起動時sqlフォルダ内のsqlファイルを実行
+  # compose up しないと名前解決に失敗するのでphpmyadminに入れない
+  phpmyadmin:
+    image: phpmyadmin #fpmやalpineタグは別途httpサーバが必要
+    container_name: phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=docker
+    ports:
+      - 8080:80
+    volumes:
+      - "./phpmyadmin:/sessions"
+    depends_on:
+      - db
 volumes:
   front_modules:
   api_modules:
-# networks:
-#   specific-site-observer:
-#     driver: host
