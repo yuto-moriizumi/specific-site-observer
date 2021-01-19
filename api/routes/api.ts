@@ -5,7 +5,7 @@ import jwksRsa from "jwks-rsa";
 const router = express.Router();
 
 /* GET users listing. */
-router.get("/public", (req, res) => {
+router.get("/pages", (req, res) => {
   res.send(JSON.stringify({ message: "This is public message" }));
 });
 
