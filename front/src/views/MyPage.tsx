@@ -281,50 +281,45 @@ class MyPage extends React.Component<Props, State> {
                     </Card.Title>
                   </Card.Link>
                   <Card.Body className="pt-1">
-                    {/* <Card.Subtitle>GO TO PARK! (2019)</Card.Subtitle> */}
                     <Rate
                       defaultValue={subscription.rating}
                       onChange={(rate) => {
                         this.onRateChange(index, rate);
                       }}
                     />
-                    <Card.Text>
-                      {/* <Container fluid> */}
-                      <Row className="no-gutters">
-                        <Col xs={"auto"}>
-                          {dayjs(subscription.updated).format("YYYY/MM/DD")}
-                        </Col>
-                        <Col xs={"auto"} className="ml-auto mr-1">
-                          {subscription.has_new ? (
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={this.onClickNew.bind(this, index)}
-                            >
-                              NEW
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={this.onClickRead.bind(this, index)}
-                            >
-                              READ
-                            </Button>
-                          )}
-                        </Col>
-                        <Col xs={"auto"}>
+                    <Row className="no-gutters">
+                      <Col xs={"auto"}>
+                        {dayjs(subscription.updated).format("YYYY/MM/DD")}
+                      </Col>
+                      <Col xs={"auto"} className="ml-auto mr-1">
+                        {subscription.has_new ? (
                           <Button
+                            variant="primary"
                             size="sm"
-                            variant="outline-danger"
-                            onClick={this.onClickDelete.bind(this, index)}
+                            onClick={this.onClickNew.bind(this, index)}
                           >
-                            <FontAwesomeIcon icon={faTrashAlt} color="red" />
+                            NEW
                           </Button>
-                        </Col>
-                      </Row>
-                      {/* </Container> */}
-                    </Card.Text>
+                        ) : (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={this.onClickRead.bind(this, index)}
+                          >
+                            READ
+                          </Button>
+                        )}
+                      </Col>
+                      <Col xs={"auto"}>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={this.onClickDelete.bind(this, index)}
+                        >
+                          <FontAwesomeIcon icon={faTrashAlt} color="red" />
+                        </Button>
+                      </Col>
+                    </Row>
                   </Card.Body>
                 </Card>
               </Col>

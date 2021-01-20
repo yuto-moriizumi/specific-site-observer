@@ -54,9 +54,9 @@ export default class Index extends React.Component<{}, State> {
         </Jumbotron>
         <Container>
           <h2>更新情報</h2>
-          <CardDeck>
+          <CardDeck className="no-gutters">
             {this.state.pages.map((page: Page) => (
-              <Col key={page.url}>
+              <Col key={page.url} xs={12} sm={6} md={4} lg={3}>
                 <Card>
                   <a href={page.url} target="_blank" rel="noreferrer">
                     <Card.Img variant="top" src={page.img} />

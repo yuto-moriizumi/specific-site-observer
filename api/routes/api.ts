@@ -82,30 +82,37 @@ router.post("/subscriptions", checkJwt, (req, res) => {
     res.status(403).send({ error: "token does not contain user information" });
     return;
   }
-  console.log(`USER_ID:${req.user.sub}`);
+  const user_id = req.user.sub;
 
   //SQLインジェクションの危険性あり
   //ページを追加する
   connection
     .query("INSERT IGNORE INTO pages" + `(url) VALUES ('${req.body.url}')`)
-    .on("error", (err) => console.log(err));
+    .on("error", (err) => {
+      console.log(err);
+      res.status(500).send();
+    })
+    .on("end", () => {
+      //最新のページ情報に更新
+      updatePageInfo({
+        url: req.body.url,
+      });
 
-  const QUERY =
-    "INSERT IGNORE INTO subscriptions" +
-    " (`user_id`, `page_url`, `rank`, `has_new`)" +
-    ` VALUES ('${req.user.sub}', '${req.body.url}', ${req.body.star}, 1)`;
-  console.log(QUERY);
+      const QUERY =
+        "INSERT IGNORE INTO subscriptions" +
+        " (`user_id`, `page_url`, `rank`, `has_new`)" +
+        ` VALUES ('${user_id}', '${req.body.url}', ${req.body.star}, 1)`;
+      console.log(QUERY);
 
-  //購読を追加する
-  connection
-    .query(QUERY)
-    .on("error", (err) => console.log(err))
-    .on("end", () => res.status(201).send());
-
-  //最新のページ情報に更新
-  updatePageInfo({
-    url: req.body.url,
-  });
+      //購読を追加する
+      connection
+        .query(QUERY)
+        .on("error", (err) => {
+          console.log(err);
+          res.status(500).send();
+        })
+        .on("end", () => res.status(201).send());
+    });
 });
 
 //既読を切り替える
