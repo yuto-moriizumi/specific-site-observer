@@ -52,11 +52,11 @@ export default class Index extends React.Component<{}, State> {
             </Link>
           </Container>
         </Jumbotron>
-        <Container>
-          <h2>更新情報</h2>
+        <Container fluid className="px-5">
+          <h2 className="h1 mb-3">更新情報</h2>
           <CardDeck className="no-gutters">
             {this.state.pages.map((page: Page) => (
-              <Col key={page.url} xs={12} sm={6} md={4} lg={3}>
+              <Col key={page.url} xs={12} sm={6} md={4} lg={3} xl={2}>
                 <Card>
                   <a href={page.url} target="_blank" rel="noreferrer">
                     <Card.Img variant="top" src={page.img} />
