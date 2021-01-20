@@ -41,14 +41,14 @@ const AUDIENCE = process.env.REACT_APP_AUTH0_AUDIENCE;
 if (!(SERVER_URL && AUDIENCE)) new Error("env invalid");
 
 class MyPage extends React.Component<Props, State> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      subscriptions: [],
-      showModal: false,
-      newCardUrl: "",
-      newCardRate: 0,
-    };
+  state = {
+    subscriptions: new Array<Subscription>(),
+    showModal: false,
+    newCardUrl: "",
+    newCardRate: 0,
+  };
+
+  componentWillMount() {
     this.getSubscriptions();
   }
 

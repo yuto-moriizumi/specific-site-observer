@@ -26,10 +26,9 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 if (!SERVER_URL) new Error("SERVER_URL must be specified");
 
 export default class Index extends React.Component<{}, State> {
-  constructor(props: any) {
-    super(props);
-    this.state = { pages: [] };
+  state = { pages: new Array<Page>() };
 
+  componentWillMount() {
     axios
       .get(`${SERVER_URL}/api/pages`)
       .then((res) => {
@@ -37,6 +36,7 @@ export default class Index extends React.Component<{}, State> {
       })
       .catch((err) => console.log(err));
   }
+
   render() {
     return (
       <React.Fragment>
