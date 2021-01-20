@@ -5,6 +5,7 @@ import jwksRsa from "jwks-rsa";
 import mysql2 from "mysql2";
 import { JSDOM } from "jsdom";
 import dayjs from "dayjs";
+import { URL } from "url";
 
 const router = express.Router();
 
@@ -93,25 +94,27 @@ router.post("/subscriptions", checkJwt, (req, res) => {
       res.status(500).send();
     })
     .on("end", () => {
-      //最新のページ情報に更新
-      updatePageInfo({
-        url: req.body.url,
-      });
-
-      const QUERY =
-        "INSERT IGNORE INTO subscriptions" +
-        " (`user_id`, `page_url`, `rank`, `has_new`)" +
-        ` VALUES ('${user_id}', '${req.body.url}', ${req.body.star}, 1)`;
-      console.log(QUERY);
-
-      //購読を追加する
-      connection
-        .query(QUERY)
-        .on("error", (err) => {
-          console.log(err);
-          res.status(500).send();
-        })
-        .on("end", () => res.status(201).send());
+      //購読追加とページ更新を並列実行
+      Promise.all([
+        updatePageInfo({
+          url: req.body.url,
+        }),
+        new Promise((fulfilled) => {
+          const QUERY =
+            "INSERT IGNORE INTO subscriptions" +
+            " (`user_id`, `page_url`, `rank`, `has_new`)" +
+            ` VALUES ('${user_id}', '${req.body.url}', ${req.body.star}, 1)`;
+          console.log(QUERY);
+          //購読を追加する
+          connection
+            .query(QUERY)
+            .on("error", (err) => {
+              console.log(err);
+              res.status(500).send();
+            })
+            .on("end", () => fulfilled(undefined));
+        }),
+      ]).then(() => res.status(201).send());
     });
 });
 
@@ -194,47 +197,40 @@ router.get("/pages/update", (req, res) => {
   pages.forEach((page) => updatePageInfo(page));
 });
 
-function updatePageInfo(page: Page) {
+//指定したページの情報を取得し、DBを更新します
+async function updatePageInfo(page: Page) {
   //htmlを取得
-  axios
-    .get(page.url)
-    .then((res) => {
-      const document = new JSDOM(res.data).window.document;
+  const res = await axios.get(page.url);
+  const gallery_document = new JSDOM(res.data).window.document;
 
-      //最初の本を取得
-      const book = document.querySelector(".cover");
-      if (!book) {
-        console.log(`${page.url}'s first book was not found`);
-        return;
-      }
+  //最初の本を取得
+  const book = gallery_document.querySelector("a.cover");
+  if (!book) {
+    console.log(`${page.url}'s first book was not found`);
+    return;
+  }
+  const book_url = new URL(page.url).origin + book.getAttribute("href");
 
-      //最初のキャプションを取得
-      const caption = book.querySelector(".caption");
-      if (!caption) {
-        console.log(`${page.url}'s caption was not found`);
-        return;
-      }
+  const res_book = await axios.get(book_url);
+  const document = new JSDOM(res_book.data).window.document;
+  //タイトルを取得
+  const title = document.querySelector("h2.title")?.textContent;
 
-      if (caption.textContent === page.last_title) return; //更新が無ければ何もしない
+  //更新が無ければ何もしない
+  if (title === page.last_title) return;
 
-      //サムネイルのエレメントを取得
-      const el_thumbnail = book.querySelector("img");
-      if (!el_thumbnail) {
-        console.log(`${page.url}'s img was not found`);
-        return;
-      }
+  //サムネイルのエレメントを取得
+  const el_thumbnail = book.querySelector("img");
 
-      const QUERY =
-        "UPDATE pages" +
-        ` SET last_title='${caption.textContent}',` +
-        ` last_img='${el_thumbnail.getAttribute("data-src")}',` +
-        ` updated='${dayjs().format("YYYY-MM-DD HH:MM:ss")}'` +
-        ` WHERE url='${page.url}'`;
-      console.log(QUERY);
-      //情報を更新する
-      connection.query(QUERY);
-    })
-    .catch((err) => console.log(err));
+  const QUERY =
+    "UPDATE pages" +
+    ` SET last_title='${title}',` +
+    ` last_img='${el_thumbnail?.getAttribute("data-src")}',` +
+    ` updated='${dayjs().format("YYYY-MM-DD HH:MM:ss")}'` +
+    ` WHERE url='${page.url}'`;
+  console.log(QUERY);
+  //情報を更新する
+  connection.query(QUERY);
 }
 
 export default router;
