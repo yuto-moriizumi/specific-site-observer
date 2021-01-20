@@ -4,6 +4,7 @@ import jwt from "express-jwt";
 import jwksRsa from "jwks-rsa";
 import mysql2 from "mysql2";
 import { JSDOM } from "jsdom";
+import dayjs from "dayjs";
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ connection.connect((err) => {
     console.log("error connecting: " + err.stack);
     return;
   }
-  console.log("database connection success");
+  // console.log("database connection success");
 });
 
 /* GET pages */
@@ -100,6 +101,11 @@ router.post("/subscriptions", checkJwt, (req, res) => {
     .query(QUERY)
     .on("error", (err) => console.log(err))
     .on("end", () => res.status(201).send());
+
+  //最新のページ情報に更新
+  updatePageInfo({
+    url: req.body.url,
+  });
 });
 
 //既読を切り替える
@@ -130,12 +136,11 @@ router.post("/subscriptions/rank", checkJwt, (req, res) => {
 
   //SQLインジェクションの危険性あり
   //ランクを変更する
-  connection
-    .query(
-      "UPDATE `Subscription`" +
-        ` SET rank=${req.body.rank} WHERE user_id='${req.user.sub}' AND page_url='${req.body.url}'`
-    )
-    .on("end", () => res.status(201).send());
+  const QUERY =
+    "UPDATE `Subscription`" +
+    ` SET \`rank\`=${req.body.rank} WHERE user_id='${req.user.sub}' AND page_url='${req.body.url}'`;
+  console.log(QUERY);
+  connection.query(QUERY).on("end", () => res.status(201).send());
 });
 
 //既読を削除する
@@ -154,63 +159,75 @@ router.post("/subscriptions/delete", checkJwt, (req, res) => {
         ` WHERE user_id='${req.user.sub}' AND page_url='${req.body.url}'`
     )
     .on("end", () => res.status(201).send());
+
+  //購読のないページを削除する
+  connection
+    .query(
+      "DELETE FROM `Page` WHERE NOT url IN (SELECT page_url FROM `Subscription`)"
+    )
+    .on("error", (err) => {
+      console.log(err);
+    });
 });
 
 type Page = {
   url: string;
-  last_title: string;
-  last_img: string;
-  updated: string;
+  last_title?: string;
+  last_img?: string;
+  updated?: string;
 };
 
 //全てのページを更新する
-router.post("/pages/update", (req, res) => {
+router.get("/pages/update", (req, res) => {
   const pages: Page[] = [];
   connection
     .query("DELETE FROM `Page`")
     .on("result", (row) => pages.push(JSON.parse(JSON.stringify(row))));
   //各ページについて
-  pages.forEach((page) => {
-    //htmlを取得
-    axios
-      .get(page.url)
-      .then((res) => {
-        const document = new JSDOM(res.data).window.document;
-
-        //最初の本を取得
-        const book = document.querySelector(".cover");
-        if (!book) {
-          console.log(`${page.url}'s first book was not found`);
-          return;
-        }
-
-        //最初のキャプションを取得
-        const caption = book.querySelector(".caption");
-        if (!caption) {
-          console.log(`${page.url}'s caption was not found`);
-          return;
-        }
-
-        if (caption.textContent === page.last_title) return; //更新が無ければ何もしない
-
-        //サムネイルのエレメントを取得
-        const el_thumbnail = book.querySelector("img");
-        if (!el_thumbnail) {
-          console.log(`${page.url}'s img was not found`);
-          return;
-        }
-
-        //情報を更新する
-        connection.query(
-          "UPDATE `Page`" +
-            ` SET last_title='${caption.textContent}'` +
-            ` last_img='${el_thumbnail.src}` +
-            ` updated=${new Date().getTime()}'` +
-            ` WHERE url='${page.url}'`
-        );
-      })
-      .catch((err) => console.log(err));
-  });
+  pages.forEach((page) => updatePageInfo(page));
 });
+
+function updatePageInfo(page: Page) {
+  //htmlを取得
+  axios
+    .get(page.url)
+    .then((res) => {
+      const document = new JSDOM(res.data).window.document;
+
+      //最初の本を取得
+      const book = document.querySelector(".cover");
+      if (!book) {
+        console.log(`${page.url}'s first book was not found`);
+        return;
+      }
+
+      //最初のキャプションを取得
+      const caption = book.querySelector(".caption");
+      if (!caption) {
+        console.log(`${page.url}'s caption was not found`);
+        return;
+      }
+
+      if (caption.textContent === page.last_title) return; //更新が無ければ何もしない
+
+      //サムネイルのエレメントを取得
+      const el_thumbnail = book.querySelector("img");
+      if (!el_thumbnail) {
+        console.log(`${page.url}'s img was not found`);
+        return;
+      }
+
+      const QUERY =
+        "UPDATE `Page`" +
+        ` SET \`last_title\`='${caption.textContent}',` +
+        ` \`last_img\`='${el_thumbnail.getAttribute("data-src")}',` +
+        ` \`updated\`='${dayjs().format("YYYY-MM-DD HH:MM:ss")}'` +
+        ` WHERE \`url\`='${page.url}'`;
+      console.log(QUERY);
+      //情報を更新する
+      connection.query(QUERY);
+    })
+    .catch((err) => console.log(err));
+}
 
 export default router;

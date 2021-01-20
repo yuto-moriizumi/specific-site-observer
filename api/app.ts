@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 //envファイルの読み込み
 const result = dotenv.config();
-console.log(result.parsed);
+// console.log(result.parsed);
 
 import createError from "http-errors";
 import Express from "express";

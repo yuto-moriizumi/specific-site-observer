@@ -188,12 +188,23 @@ class MyPage extends React.Component<Props, State> {
     this.setState({ newCardRate: rate });
   }
 
-  private onRateChange(index: number, rate: number) {
+  private async onRateChange(index: number, rate: number) {
+    const token = await this.props.auth0.getAccessTokenSilently({
+      audience: AUDIENCE,
+    });
     axios
-      .post(`${SERVER_URL}/api/subscriptions/rank/`, {
-        url: this.state.subscriptions[index].url,
-        rank: rate,
-      })
+      .post(
+        `${SERVER_URL}/api/subscriptions/rank/`,
+        {
+          url: this.state.subscriptions[index].url,
+          rank: rate,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then(() => {
         // console.log(this.state.subscriptions[index].title, rate);
       })
@@ -275,7 +286,7 @@ class MyPage extends React.Component<Props, State> {
                       {subscription.title}
                     </Card.Title>
                   </Card.Link>
-                  <Card.Body className="pt-0">
+                  <Card.Body className="pt-1">
                     {/* <Card.Subtitle>GO TO PARK! (2019)</Card.Subtitle> */}
                     <Rate
                       defaultValue={subscription.rating}
