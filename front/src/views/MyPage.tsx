@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import {
-  Badge,
   Button,
   Card,
   CardDeck,
@@ -12,14 +11,9 @@ import {
   Modal,
   Row,
 } from "react-bootstrap";
-import {
-  faPlusSquare,
-  faEnvelope,
-  faTrashAlt,
-} from "@fortawesome/free-regular-svg-icons";
+import { faPlusSquare, faTrashAlt } from "@fortawesome/free-regular-svg-icons";
 import Rate from "rc-rate";
 import axios from "axios";
-import { Router } from "react-router";
 import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
 import dayjs from "dayjs";
 

@@ -7,7 +7,6 @@ import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoginButton from "./components/LoginButton";
 import LogoutButton from "./components/LogoutButton";
-import ExternalApi from "./components/ExternalApi";
 
 type Props = {
   auth0: Auth0ContextInterface;
@@ -27,9 +26,6 @@ class App extends React.Component<Props, {}> {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ml-auto">
-              <Nav.Item>
-                <Link to="/exapi">API</Link>
-              </Nav.Item>
               {this.props.auth0.isAuthenticated ? (
                 <>
                   <Nav.Item>
@@ -47,7 +43,6 @@ class App extends React.Component<Props, {}> {
           </Navbar.Collapse>
         </Navbar>
         <Route exact path="/" component={Index}></Route>
-        <Route path="/exapi" component={ExternalApi}></Route>
         <ProtectedRoute path="/mypage" component={MyPage}></ProtectedRoute>
       </>
     );
