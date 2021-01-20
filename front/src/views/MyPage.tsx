@@ -277,11 +277,11 @@ class MyPage extends React.Component<Props, State> {
                 <Card>
                   <Card.Link href={subscription.url} target="_blank">
                     <Card.Img variant="top" src={subscription.img} />
-                    <Card.Title className="pt-3 px-3 mb-0">
+                    <Card.Title className="pt-2 px-3 mb-0">
                       {subscription.title}
                     </Card.Title>
                   </Card.Link>
-                  <Card.Body className="pt-2">
+                  <Card.Body className="pt-2 pb-3">
                     <Card.Subtitle className="pb-1">
                       {subscription.name}
                     </Card.Subtitle>

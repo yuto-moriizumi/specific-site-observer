@@ -29,15 +29,24 @@ class App extends React.Component<Props, {}> {
               {this.props.auth0.isAuthenticated ? (
                 <>
                   <Nav.Item>
-                    <Image src={this.props.auth0.user.picture} thumbnail />
+                    <Image
+                      src={this.props.auth0.user.picture}
+                      thumbnail
+                      className="img-fluid"
+                      style={{ maxHeight: "5vh" }}
+                    />
                   </Nav.Item>
                   <Nav.Item className="pt-2 mx-2">
                     {this.props.auth0.user.nickname}
                   </Nav.Item>
-                  <LogoutButton />
+                  <Nav.Item>
+                    <LogoutButton />
+                  </Nav.Item>
                 </>
               ) : (
-                <LoginButton />
+                <Nav.Item>
+                  <LoginButton />
+                </Nav.Item>
               )}
             </Nav>
           </Navbar.Collapse>
