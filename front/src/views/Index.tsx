@@ -12,6 +12,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 
 type Page = {
+  name: string;
   url: string;
   title: string;
   img: string;
@@ -58,12 +59,15 @@ export default class Index extends React.Component<{}, State> {
             {this.state.pages.map((page: Page) => (
               <Col key={page.url} xs={12} sm={6} md={4} lg={3} xl={2}>
                 <Card>
-                  <a href={page.url} target="_blank" rel="noreferrer">
+                  <Card.Link href={page.url} target="_blank" rel="noreferrer">
                     <Card.Img variant="top" src={page.img} />
                     <Card.Body className="px-3 py-2">
-                      <Card.Title className="mb-0">{page.title}</Card.Title>
+                      <Card.Title className="mb-1">{page.title}</Card.Title>
                     </Card.Body>
-                  </a>
+                  </Card.Link>
+                  <Card.Subtitle className="px-3 pb-2">
+                    {page.name}
+                  </Card.Subtitle>
                   <Card.Footer>
                     {dayjs(page.updated).format("YYYY/MM/DD")}
                   </Card.Footer>

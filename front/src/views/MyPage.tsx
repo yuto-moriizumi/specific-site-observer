@@ -18,6 +18,7 @@ import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
 import dayjs from "dayjs";
 
 type Subscription = {
+  name: string;
   url: string;
   title: string;
   img: string;
@@ -208,8 +209,8 @@ class MyPage extends React.Component<Props, State> {
   render() {
     return (
       <React.Fragment>
-        <Container className="mt-5">
-          <Row>
+        <Container className="mt-5" fluid>
+          <Row className="mx-5 mb-3">
             <Col>
               <h1>マイページ</h1>
             </Col>
@@ -280,7 +281,10 @@ class MyPage extends React.Component<Props, State> {
                       {subscription.title}
                     </Card.Title>
                   </Card.Link>
-                  <Card.Body className="pt-1">
+                  <Card.Body className="pt-2">
+                    <Card.Subtitle className="pb-1">
+                      {subscription.name}
+                    </Card.Subtitle>
                     <Rate
                       defaultValue={subscription.rating}
                       onChange={(rate) => {
