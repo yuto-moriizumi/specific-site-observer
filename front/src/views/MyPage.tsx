@@ -209,68 +209,60 @@ class MyPage extends React.Component<Props, State> {
   render() {
     return (
       <React.Fragment>
-        <Container className="mt-5" fluid>
-          <Row className="mx-5 mb-3">
-            <Col>
+        <Container className="my-4">
+          <Row>
+            <Col xs={"auto"}>
               <h1>マイページ</h1>
             </Col>
-            <Col>
-              <Button
-                // size="lg"
-                className="pt-1"
-                onClick={this.onClickAdd.bind(this)}
-              >
-                <Row>
-                  <Col xs={1}>
+            <Col xs={"auto"} className="ml-auto">
+              <Button size="lg" onClick={this.onClickAdd.bind(this)}>
+                <Row noGutters>
+                  <Col xs={"auto"} className="mr-2">
                     <FontAwesomeIcon icon={faPlusSquare} />
                   </Col>
-                  <Col>ウォッチャカードを追加</Col>
+                  <Col xs={"auto"}>ウォッチャカードを追加</Col>
                 </Row>
               </Button>
             </Col>
           </Row>
-          {/* 購読追加モーダル */}
-          <Modal
-            show={this.state.showModal}
-            onHide={this.handleClose.bind(this)}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>ウォッチャカードを追加</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form>
-                <Form.Group as={Row}>
-                  <Form.Label column xs={2}>
-                    URL
-                  </Form.Label>
-                  <Col xs={10}>
-                    <Form.Control
-                      placeholder="https://www.google.com/"
-                      type="url"
-                      value={this.state.newCardUrl}
-                      onChange={this.onNewCardUrlChange.bind(this)}
-                    />
-                  </Col>
-                </Form.Group>
-                <Form.Group as={Row}>
-                  <Form.Label column xs={2}>
-                    評価
-                  </Form.Label>
-                  <Col xs={10}>
-                    <Rate onChange={this.onNewCardRateChange.bind(this)} />
-                  </Col>
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="primary"
-                onClick={this.addSubscription.bind(this)}
-              >
-                追加
-              </Button>
-            </Modal.Footer>
-          </Modal>
+        </Container>
+        {/* 購読追加モーダル */}
+        <Modal show={this.state.showModal} onHide={this.handleClose.bind(this)}>
+          <Modal.Header closeButton>
+            <Modal.Title>ウォッチャカードを追加</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group as={Row}>
+                <Form.Label column xs={2}>
+                  URL
+                </Form.Label>
+                <Col xs={10}>
+                  <Form.Control
+                    placeholder="https://www.google.com/"
+                    type="url"
+                    value={this.state.newCardUrl}
+                    onChange={this.onNewCardUrlChange.bind(this)}
+                  />
+                </Col>
+              </Form.Group>
+              <Form.Group as={Row}>
+                <Form.Label column xs={2}>
+                  評価
+                </Form.Label>
+                <Col xs={10}>
+                  <Rate onChange={this.onNewCardRateChange.bind(this)} />
+                </Col>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={this.addSubscription.bind(this)}>
+              追加
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        <Container fluid>
           <CardDeck className="no-gutters">
             {this.state.subscriptions.map((subscription, index) => (
               <Col key={index} xs={12} sm={6} md={4} lg={3} xl={2}>
