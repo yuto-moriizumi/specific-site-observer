@@ -28,7 +28,7 @@ router.get("/pages", (req, res) => {
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   connection
     .query(
-      "SELECT url, last_title as title, last_img as img, updated FROM page"
+      "SELECT url, last_title as title, last_img as img, updated FROM pages"
     )
     .on("result", (row) => data.push(row))
     .on("end", () => res.send(data));
@@ -69,7 +69,7 @@ router.get("/subscriptions", checkJwt, (req, res) => {
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   connection
     .query(
-      "SELECT `url`, `last_title` as `title`, `last_img` as `img`, `updated`, `rank` as `rating`, `has_new` FROM `Page` INNER JOIN `Subscription` WHERE Page.url=Subscription.page_url " +
+      "SELECT `url`, `last_title` as `title`, `last_img` as `img`, `updated`, `rank` as `rating`, `has_new` FROM pages INNER JOIN subscriptions WHERE pages.url=subscriptions.page_url " +
         `AND user_id='${req.user.sub}' ORDER BY rating DESC`
     )
     .on("result", (row) => data.push(row))
@@ -87,11 +87,11 @@ router.post("/subscriptions", checkJwt, (req, res) => {
   //SQLインジェクションの危険性あり
   //ページを追加する
   connection
-    .query("INSERT IGNORE INTO `Page`" + `(url) VALUES ('${req.body.url}')`)
+    .query("INSERT IGNORE INTO pages" + `(url) VALUES ('${req.body.url}')`)
     .on("error", (err) => console.log(err));
 
   const QUERY =
-    "INSERT IGNORE INTO `Subscription`" +
+    "INSERT IGNORE INTO subscriptions" +
     " (`user_id`, `page_url`, `rank`, `has_new`)" +
     ` VALUES ('${req.user.sub}', '${req.body.url}', ${req.body.star}, 1)`;
   console.log(QUERY);
@@ -120,7 +120,7 @@ router.post("/subscriptions/new", checkJwt, (req, res) => {
   //既読を切り替える
   connection
     .query(
-      "UPDATE `Subscription`" +
+      "UPDATE subscriptions" +
         ` SET has_new=${req.body.has_new} WHERE user_id='${req.user.sub}' AND page_url='${req.body.url}'`
     )
     .on("end", () => res.status(201).send());
@@ -137,8 +137,8 @@ router.post("/subscriptions/rank", checkJwt, (req, res) => {
   //SQLインジェクションの危険性あり
   //ランクを変更する
   const QUERY =
-    "UPDATE `Subscription`" +
-    ` SET \`rank\`=${req.body.rank} WHERE user_id='${req.user.sub}' AND page_url='${req.body.url}'`;
+    "UPDATE subscriptions" +
+    ` SET rank=${req.body.rank} WHERE user_id='${req.user.sub}' AND page_url='${req.body.url}'`;
   console.log(QUERY);
   connection.query(QUERY).on("end", () => res.status(201).send());
 });
@@ -155,7 +155,7 @@ router.post("/subscriptions/delete", checkJwt, (req, res) => {
   //既読を削除する
   connection
     .query(
-      "DELETE FROM `Subscription`" +
+      "DELETE FROM subscriptions" +
         ` WHERE user_id='${req.user.sub}' AND page_url='${req.body.url}'`
     )
     .on("end", () => res.status(201).send());
@@ -163,7 +163,7 @@ router.post("/subscriptions/delete", checkJwt, (req, res) => {
   //購読のないページを削除する
   connection
     .query(
-      "DELETE FROM `Page` WHERE NOT url IN (SELECT page_url FROM `Subscription`)"
+      "DELETE FROM pages WHERE NOT url IN (SELECT page_url FROM subscriptions)"
     )
     .on("error", (err) => {
       console.log(err);
@@ -181,7 +181,7 @@ type Page = {
 router.get("/pages/update", (req, res) => {
   const pages: Page[] = [];
   connection
-    .query("DELETE FROM `Page`")
+    .query("DELETE FROM pages")
     .on("result", (row) => pages.push(JSON.parse(JSON.stringify(row))));
   //各ページについて
   pages.forEach((page) => updatePageInfo(page));
@@ -218,11 +218,11 @@ function updatePageInfo(page: Page) {
       }
 
       const QUERY =
-        "UPDATE `Page`" +
-        ` SET \`last_title\`='${caption.textContent}',` +
-        ` \`last_img\`='${el_thumbnail.getAttribute("data-src")}',` +
-        ` \`updated\`='${dayjs().format("YYYY-MM-DD HH:MM:ss")}'` +
-        ` WHERE \`url\`='${page.url}'`;
+        "UPDATE pages" +
+        ` SET last_title='${caption.textContent}',` +
+        ` last_img='${el_thumbnail.getAttribute("data-src")}',` +
+        ` updated='${dayjs().format("YYYY-MM-DD HH:MM:ss")}'` +
+        ` WHERE url='${page.url}'`;
       console.log(QUERY);
       //情報を更新する
       connection.query(QUERY);
