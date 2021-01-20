@@ -21,6 +21,7 @@ import Rate from "rc-rate";
 import axios from "axios";
 import { Router } from "react-router";
 import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
+import dayjs from "dayjs";
 
 type Subscription = {
   url: string;
@@ -44,7 +45,7 @@ const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 const AUDIENCE = process.env.REACT_APP_AUTH0_AUDIENCE;
 if (!(SERVER_URL && AUDIENCE)) new Error("env invalid");
 
-class Index extends React.Component<Props, State> {
+class MyPage extends React.Component<Props, State> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -66,7 +67,7 @@ class Index extends React.Component<Props, State> {
           authorization: `Bearer ${token}`,
         },
       })
-      .then((res) => this.setState({ subscriptions: res.data.subscriptions }))
+      .then((res) => this.setState({ subscriptions: res.data }))
       .catch((err) => console.log(err));
   }
 
@@ -118,7 +119,7 @@ class Index extends React.Component<Props, State> {
     });
     axios
       .post(
-        `${SERVER_URL}/api/subscriptionsnew/`,
+        `${SERVER_URL}/api/subscriptions/new/`,
         {
           url: this.state.subscriptions[index].url,
           has_new: has_new,
@@ -157,7 +158,7 @@ class Index extends React.Component<Props, State> {
     });
     axios
       .post(
-        `${SERVER_URL}/api/subscriptionsdelete`,
+        `${SERVER_URL}/api/subscriptions/delete`,
         {
           url: this.state.subscriptions[index].url,
         },
@@ -189,7 +190,7 @@ class Index extends React.Component<Props, State> {
 
   private onRateChange(index: number, rate: number) {
     axios
-      .post(`${SERVER_URL}/api/subscriptionsrank/`, {
+      .post(`${SERVER_URL}/api/subscriptions/rank/`, {
         url: this.state.subscriptions[index].url,
         rank: rate,
       })
@@ -209,7 +210,7 @@ class Index extends React.Component<Props, State> {
             </Col>
             <Col>
               <Button
-                size="lg"
+                // size="lg"
                 className="pt-1"
                 onClick={this.onClickAdd.bind(this)}
               >
@@ -264,13 +265,17 @@ class Index extends React.Component<Props, State> {
               </Button>
             </Modal.Footer>
           </Modal>
-          <CardDeck>
+          <CardDeck className="no-gutters">
             {this.state.subscriptions.map((subscription, index) => (
-              <Col key={index}>
+              <Col key={index} xs={12} sm={6} md={4} lg={3}>
                 <Card>
-                  <Card.Img variant="top" src={subscription.img} />
-                  <Card.Body>
-                    <Card.Title>{subscription.title}</Card.Title>
+                  <Card.Link href={subscription.url} target="_blank">
+                    <Card.Img variant="top" src={subscription.img} />
+                    <Card.Title className="pt-3 px-3 mb-0">
+                      {subscription.title}
+                    </Card.Title>
+                  </Card.Link>
+                  <Card.Body className="pt-0">
                     {/* <Card.Subtitle>GO TO PARK! (2019)</Card.Subtitle> */}
                     <Rate
                       defaultValue={subscription.rating}
@@ -279,39 +284,41 @@ class Index extends React.Component<Props, State> {
                       }}
                     />
                     <Card.Text>
-                      <Container fluid>
-                        <Row className="no-gutters">
-                          <Col xs={9}>{subscription.updated}</Col>
-                          <Col xs={2}>
-                            {subscription.has_new ? (
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={this.onClickNew.bind(this, index)}
-                              >
-                                NEW
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={this.onClickRead.bind(this, index)}
-                              >
-                                READ
-                              </Button>
-                            )}
-                          </Col>
-                          <Col xs={1}>
+                      {/* <Container fluid> */}
+                      <Row className="no-gutters">
+                        <Col xs={"auto"}>
+                          {dayjs(subscription.updated).format("YYYY/MM/DD")}
+                        </Col>
+                        <Col xs={"auto"} className="ml-auto mr-1">
+                          {subscription.has_new ? (
                             <Button
+                              variant="primary"
                               size="sm"
-                              variant="outline-danger"
-                              onClick={this.onClickDelete.bind(this, index)}
+                              onClick={this.onClickNew.bind(this, index)}
                             >
-                              <FontAwesomeIcon icon={faTrashAlt} color="red" />
+                              NEW
                             </Button>
-                          </Col>
-                        </Row>
-                      </Container>
+                          ) : (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={this.onClickRead.bind(this, index)}
+                            >
+                              READ
+                            </Button>
+                          )}
+                        </Col>
+                        <Col xs={"auto"}>
+                          <Button
+                            size="sm"
+                            variant="outline-danger"
+                            onClick={this.onClickDelete.bind(this, index)}
+                          >
+                            <FontAwesomeIcon icon={faTrashAlt} color="red" />
+                          </Button>
+                        </Col>
+                      </Row>
+                      {/* </Container> */}
                     </Card.Text>
                   </Card.Body>
                 </Card>
@@ -324,4 +331,4 @@ class Index extends React.Component<Props, State> {
   }
 }
 
-export default withAuth0(Index);
+export default withAuth0(MyPage);

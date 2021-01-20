@@ -10,13 +10,14 @@ import {
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+type Page = {
+  url: string;
+  title: string;
+  img: string;
+  updated: string;
+};
 interface State {
-  pages: {
-    url: string;
-    title: string;
-    img: string;
-    updated: string;
-  }[];
+  pages: Page[];
 }
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL;
@@ -26,9 +27,12 @@ export default class Index extends React.Component<{}, State> {
   constructor(props: any) {
     super(props);
     this.state = { pages: [] };
+
     axios
       .get(`${SERVER_URL}/api/pages`)
-      .then((res) => this.setState({ pages: res.data.pages }))
+      .then((res) => {
+        this.setState({ pages: res.data });
+      })
       .catch((err) => console.log(err));
   }
   render() {
@@ -48,7 +52,7 @@ export default class Index extends React.Component<{}, State> {
         <Container>
           <h2>更新情報</h2>
           <CardDeck>
-            {this.state.pages.map((page) => (
+            {this.state.pages.map((page: Page) => (
               <Col key={page.url}>
                 <a href={page.url} target="_blank" rel="noreferrer">
                   <Card>

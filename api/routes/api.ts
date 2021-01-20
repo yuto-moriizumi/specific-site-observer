@@ -26,7 +26,9 @@ connection.connect((err) => {
 router.get("/pages", (req, res) => {
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   connection
-    .query("SELECT * FROM page")
+    .query(
+      "SELECT url, last_title as title, last_img as img, updated FROM page"
+    )
     .on("result", (row) => data.push(row))
     .on("end", () => res.send(data));
 });
@@ -87,12 +89,15 @@ router.post("/subscriptions", checkJwt, (req, res) => {
     .query("INSERT IGNORE INTO `Page`" + `(url) VALUES ('${req.body.url}')`)
     .on("error", (err) => console.log(err));
 
+  const QUERY =
+    "INSERT IGNORE INTO `Subscription`" +
+    " (`user_id`, `page_url`, `rank`, `has_new`)" +
+    ` VALUES ('${req.user.sub}', '${req.body.url}', ${req.body.star}, 1)`;
+  console.log(QUERY);
+
   //購読を追加する
   connection
-    .query(
-      "INSERT IGNORE INTO `Subscription`" +
-        `(user_id, page_url, rank, has_new) VALUES ('${req.user.sub}', '${req.body.url}', ${req.body.star}, 1)`
-    )
+    .query(QUERY)
     .on("error", (err) => console.log(err))
     .on("end", () => res.status(201).send());
 });
@@ -103,7 +108,7 @@ router.post("/subscriptions/new", checkJwt, (req, res) => {
     res.status(403).send({ error: "token does not contain user information" });
     return;
   }
-  console.log(`USER_ID:${req.user.sub}`);
+  console.log(`USER_ID:${req.user.sub}, BODY:${req.body}`);
 
   //SQLインジェクションの危険性あり
   //既読を切り替える

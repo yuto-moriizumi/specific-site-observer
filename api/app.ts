@@ -13,10 +13,14 @@ import apiRouter from "./routes/api";
 
 const app = Express();
 
+//ミドルウェア設定
 app.use(logger("dev"));
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_ORIGIN_URL }));
+app.use(Express.json());
+app.use(Express.urlencoded({ extended: true }));
 
+//apiルータへ
 app.use("/api", apiRouter);
 
 // catch 404 and forward to error handler
