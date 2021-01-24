@@ -5,8 +5,8 @@ import { Nav, Navbar, Image } from "react-bootstrap";
 import MyPage from "./views/MyPage";
 import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
 import ProtectedRoute from "./components/ProtectedRoute";
-import LoginButton from "./components/LoginButton";
-import LogoutButton from "./components/LogoutButton";
+import LoginButton from "./components/loginButton2";
+import LogoutButton from "./components/logoutButton2";
 
 type Props = {
   auth0: Auth0ContextInterface;
