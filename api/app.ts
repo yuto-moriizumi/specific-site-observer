@@ -23,6 +23,11 @@ app.use(Express.urlencoded({ extended: true }));
 //apiルータへ
 app.use("/api", apiRouter);
 
+//ダミー
+app.get("/", (req, res) => {
+  res.send("welcome to specific site api server");
+});
+
 // catch 404 and forward to error handler
 app.use((req, res, next) => next(createError(404)));
 

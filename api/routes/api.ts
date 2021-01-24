@@ -9,30 +9,37 @@ import { URL } from "url";
 
 const router = express.Router();
 
-const connection = mysql2.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_USE_DB,
-});
+const DB_SETTING = {
+  host: process.env.RDS_HOSTNAME,
+  user: process.env.RDS_USERNAME,
+  password: process.env.RDS_PASSWORD,
+  database: process.env.RDS_DB_NAME,
+};
+const connection = mysql2.createConnection(DB_SETTING);
 
 connection.connect((err) => {
   if (err) {
     console.log("error connecting: " + err.stack);
+    console.log(DB_SETTING);
     return;
   }
   // console.log("database connection success");
 });
+connection.end();
 
 /* GET pages */
 router.get("/pages", (req, res) => {
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   connection
     .query(
       "SELECT name, url, last_title as title, last_img as img, updated FROM artists"
     )
     .on("result", (row) => data.push(row))
-    .on("end", () => res.send(data));
+    .on("end", () => {
+      res.send(data);
+    });
 });
 
 const checkJwt = jwt({
@@ -67,6 +74,8 @@ router.get("/subscriptions", checkJwt, (req, res) => {
   }
   console.log(`USER_ID:${req.user.sub}`);
 
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   const QUERY =
     "SELECT name, `url`, `last_title` as `title`, `last_img` as `img`, `updated`, `rank` as `rating`, `has_new` FROM artists NATURAL JOIN subscriptions " +
@@ -88,6 +97,8 @@ router.post("/subscriptions", checkJwt, (req, res) => {
 
   //SQLインジェクションの危険性あり
   //ページを追加する
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   connection
     .query("INSERT IGNORE INTO artists" + `(url) VALUES ('${req.body.url}')`)
     .on("error", (err) => {
@@ -129,6 +140,8 @@ router.post("/subscriptions/new", checkJwt, (req, res) => {
 
   //SQLインジェクションの危険性あり
   //既読を切り替える
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   connection
     .query(
       "UPDATE subscriptions" +
@@ -151,6 +164,8 @@ router.post("/subscriptions/rank", checkJwt, (req, res) => {
     "UPDATE subscriptions" +
     ` SET rank=${req.body.rank} WHERE user_id='${req.user.sub}' AND url='${req.body.url}'`;
   console.log(QUERY);
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   connection.query(QUERY).on("end", () => res.status(201).send());
 });
 
@@ -164,6 +179,8 @@ router.post("/subscriptions/delete", checkJwt, (req, res) => {
 
   //SQLインジェクションの危険性あり
   //既読を削除する
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   connection
     .query(
       "DELETE FROM subscriptions" +
@@ -191,6 +208,8 @@ type Page = {
 //全てのページを更新する
 router.get("/pages/update", (req, res) => {
   const pages: Page[] = [];
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   connection
     .query("DELETE FROM artists")
     .on("result", (row) => pages.push(JSON.parse(JSON.stringify(row))));
@@ -235,6 +254,8 @@ async function updatePageInfo(page: Page) {
     ` WHERE url='${page.url}'`;
   console.log(QUERY);
   //情報を更新する
+  const connection = mysql2.createConnection(DB_SETTING);
+  connection.connect();
   connection.query(QUERY);
 }
 
