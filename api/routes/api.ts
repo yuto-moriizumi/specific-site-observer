@@ -10,10 +10,10 @@ import { URL } from "url";
 const router = express.Router();
 
 const connection = mysql2.createConnection({
-  host: "db" || "192.168.0.8", //docker使用時はコンテナ名で名前解決可能
-  user: "root",
-  password: "docker",
-  database: "mydb",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_USE_DB,
 });
 
 connection.connect((err) => {
@@ -40,7 +40,7 @@ const checkJwt = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: "https://dev-eq2ig8u3.jp.auth0.com/.well-known/jwks.json",
+    jwksUri: process.env.AUTH0_DOMAIN + ".well-known/jwks.json",
   }),
   audience: process.env.AUTH0_AUDIENCE,
   issuer: process.env.AUTH0_DOMAIN,
