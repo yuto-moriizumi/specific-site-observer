@@ -60,7 +60,11 @@ export default class Index extends React.Component<{}, State> {
               <Col key={page.url} xs={12} sm={6} md={4} lg={3} xl={2}>
                 <Card>
                   <Card.Link href={page.url} target="_blank" rel="noreferrer">
-                    <Card.Img variant="top" src={page.img} />
+                    <Card.Img
+                      variant="top"
+                      src={page.img}
+                      referrerPolicy="no-referrer"
+                    />
                     <Card.Body className="px-3 py-2">
                       <Card.Title className="mb-1">{page.title}</Card.Title>
                     </Card.Body>

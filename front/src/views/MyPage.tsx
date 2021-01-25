@@ -268,7 +268,11 @@ class MyPage extends React.Component<Props, State> {
               <Col key={index} xs={12} sm={6} md={4} lg={3} xl={2}>
                 <Card>
                   <Card.Link href={subscription.url} target="_blank">
-                    <Card.Img variant="top" src={subscription.img} />
+                    <Card.Img
+                      variant="top"
+                      src={subscription.img}
+                      referrerPolicy="no-referrer"
+                    />
                     <Card.Title className="pt-2 px-3 mb-0">
                       {subscription.title}
                     </Card.Title>
