@@ -25,7 +25,7 @@ app.use("/api", apiRouter);
 
 //ダミー
 app.get("/", (req, res) => {
-  res.send("welcome to specific site api server");
+  res.status(200).send("welcome to specific site api server");
 });
 
 // catch 404 and forward to error handler

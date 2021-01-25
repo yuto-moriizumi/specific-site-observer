@@ -112,12 +112,12 @@ router.post("/subscriptions", checkJwt, (req, res) => {
           url: req.body.url,
         }),
         new Promise((fulfilled) => {
+          //購読を追加する
           const QUERY =
             "INSERT IGNORE INTO subscriptions" +
             " (`user_id`, `url`, `rank`, `has_new`)" +
             ` VALUES ('${user_id}', '${req.body.url}', ${req.body.star}, 1)`;
           console.log(QUERY);
-          //購読を追加する
           connection
             .query(QUERY)
             .on("error", (err) => {
@@ -211,14 +211,33 @@ router.get("/pages/update", (req, res) => {
   const connection = mysql2.createConnection(DB_SETTING);
   connection.connect();
   connection
-    .query("DELETE FROM artists")
-    .on("result", (row) => pages.push(JSON.parse(JSON.stringify(row))));
-  //各ページについて
-  pages.forEach((page) => updatePageInfo(page));
+    .query("SELECT * FROM artists ORDER BY updated ASC")
+    .on("result", (row) => pages.push(JSON.parse(JSON.stringify(row))))
+    .on("end", async () => {
+      console.log(`pages loaded, total ${pages.length}`);
+      // const PARALLEL_SIZE = 2;
+      // const CHUNK_SIZE = Math.floor(pages.length / PARALLEL_SIZE);
+      // while (pages.length > 0) {
+      //   const chunk_pages = pages.splice(0, Math.min(CHUNK_SIZE, pages.length));
+      //   chunk_pages.forEach((pages) => updateCycle(pages));
+      // }
+      // for (let i = 0; i < PARALLEL_SIZE; i++) {
+      //   updateCycle(pages.slice(i * CHUNK_SIZE, i * CHUNK_SIZE + CHUNK_SIZE));
+      // }
+      updateCycle(pages);
+    });
+  res.status(202).send();
 });
+
+async function updateCycle(pages: Page[]) {
+  for (const page of pages) {
+    await updatePageInfo(page);
+  }
+}
 
 //指定したページの情報を取得し、DBを更新します
 async function updatePageInfo(page: Page) {
+  console.log(`${page.url} update start`);
   //htmlを取得
   const res = await axios.get(page.url);
   const gallery_document = new JSDOM(res.data).window.document;
@@ -237,7 +256,10 @@ async function updatePageInfo(page: Page) {
   const title = document.querySelector("h2.title span.pretty")?.textContent;
 
   //更新が無ければ何もしない
-  if (title === page.last_title) return;
+  if (title === page.last_title) {
+    console.log(`${page.url} no update`);
+    return;
+  }
 
   //作者を取得
   const author = document.querySelector("h2.title span.before")?.textContent;
@@ -247,16 +269,35 @@ async function updatePageInfo(page: Page) {
 
   const QUERY =
     "UPDATE artists" +
-    ` SET name='${author}',` +
-    ` last_title='${title}',` +
-    ` last_img='${el_thumbnail?.getAttribute("data-src")}',` +
-    ` updated='${dayjs().format("YYYY-MM-DD HH:MM:ss")}'` +
-    ` WHERE url='${page.url}'`;
-  console.log(QUERY);
+    ` SET name=?,` +
+    ` last_title=?,` +
+    ` last_img=?,` +
+    ` updated=?` +
+    ` WHERE url=?`;
   //情報を更新する
   const connection = mysql2.createConnection(DB_SETTING);
   connection.connect();
-  connection.query(QUERY);
+  await new Promise((resolve) => {
+    connection
+      .execute(QUERY, [
+        author ?? "undefined",
+        title ?? "undefined",
+        el_thumbnail?.getAttribute("data-src") ?? "undefined",
+        dayjs().format("YYYY-MM-DD HH:MM:ss"),
+        page.url,
+      ])
+      .on("end", () => {
+        console.log(`${page.url} update end`);
+        resolve(undefined);
+      });
+  });
 }
+
+//Promiceを遅延実行する
+// async function updatePageLazy(page: Page, ms: number) {
+//   // await updatePageInfo(page);
+//   console.log(dayjs().format("mm:ss"));
+//   await new Promise((resolve) => setTimeout(resolve, ms));
+// }
 
 export default router;

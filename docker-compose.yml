@@ -55,9 +55,9 @@ services:
     container_name: phpmyadmin
     environment:
       - PMA_ARBITRARY=1
-      # - PMA_HOST=db
-      # - PMA_USER=root
-      # - PMA_PASSWORD=docker
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=docker
     ports:
       - 8080:80
     volumes:

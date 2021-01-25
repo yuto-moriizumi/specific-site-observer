@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "ts-node-dev --poll ./bin/www",
-    "start": "ts-node ./bin/www"
+    "start": "ts-node ./bin/www",
+    "build": "tsc"
   },
   "dependencies": {
     "axios": "^0.21.1",
