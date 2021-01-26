@@ -215,25 +215,12 @@ router.get("/pages/update", (req, res) => {
     .on("result", (row) => pages.push(JSON.parse(JSON.stringify(row))))
     .on("end", async () => {
       console.log(`pages loaded, total ${pages.length}`);
-      // const PARALLEL_SIZE = 2;
-      // const CHUNK_SIZE = Math.floor(pages.length / PARALLEL_SIZE);
-      // while (pages.length > 0) {
-      //   const chunk_pages = pages.splice(0, Math.min(CHUNK_SIZE, pages.length));
-      //   chunk_pages.forEach((pages) => updateCycle(pages));
-      // }
-      // for (let i = 0; i < PARALLEL_SIZE; i++) {
-      //   updateCycle(pages.slice(i * CHUNK_SIZE, i * CHUNK_SIZE + CHUNK_SIZE));
-      // }
-      updateCycle(pages);
+      for (const page of pages) {
+        await updatePageInfo(page);
+      }
     });
   res.status(202).send();
 });
-
-async function updateCycle(pages: Page[]) {
-  for (const page of pages) {
-    await updatePageInfo(page);
-  }
-}
 
 //指定したページの情報を取得し、DBを更新します
 async function updatePageInfo(page: Page) {
@@ -242,62 +229,67 @@ async function updatePageInfo(page: Page) {
   const res = await axios.get(page.url);
   const gallery_document = new JSDOM(res.data).window.document;
 
-  //最初の本を取得
-  const book = gallery_document.querySelector("a.cover");
-  if (!book) {
+  //本を取得
+  const books = gallery_document.querySelectorAll("a.cover");
+  if (!books) {
     console.log(`${page.url}'s first book was not found`);
     return;
   }
-  const book_url = new URL(page.url).origin + book.getAttribute("href");
 
-  const res_book = await axios.get(book_url);
-  const document = new JSDOM(res_book.data).window.document;
-  //タイトルを取得
-  const title = document.querySelector("h2.title span.pretty")?.textContent;
+  //最新の日本語本を見つける
+  for (const book of Array.from(books)) {
+    const book_url = new URL(page.url).origin + book.getAttribute("href");
+    const res_book = await axios.get(book_url);
+    const document = new JSDOM(res_book.data).window.document;
 
-  //更新が無ければ何もしない
-  if (title === page.last_title) {
-    console.log(`${page.url} no update`);
-    return;
-  }
+    //言語を取得
+    const language = document.querySelector("h2.title span.after")?.textContent;
+    if (language === "") {
+      //日本語である
+      //タイトルを取得
+      const title = document.querySelector("h2.title span.pretty")?.textContent;
 
-  //作者を取得
-  const author = document.querySelector("h2.title span.before")?.textContent;
+      //更新が無ければ何もしない
+      if (title === page.last_title) {
+        console.log(`${page.url} no update`);
+        return;
+      }
 
-  //サムネイルのエレメントを取得
-  const el_thumbnail = book.querySelector("img");
+      //作者を取得
+      const author = document.querySelector("h2.title span.before")
+        ?.textContent;
 
-  const QUERY =
-    "UPDATE artists" +
-    ` SET name=?,` +
-    ` last_title=?,` +
-    ` last_img=?,` +
-    ` updated=?` +
-    ` WHERE url=?`;
-  //情報を更新する
-  const connection = mysql2.createConnection(DB_SETTING);
-  connection.connect();
-  await new Promise((resolve) => {
-    connection
-      .execute(QUERY, [
-        author ?? "undefined",
-        title ?? "undefined",
-        el_thumbnail?.getAttribute("data-src") ?? "undefined",
-        dayjs().format("YYYY-MM-DD HH:MM:ss"),
-        page.url,
-      ])
-      .on("end", () => {
-        console.log(`${page.url} update end`);
-        resolve(undefined);
+      //サムネイルのエレメントを取得
+      const el_thumbnail = book.querySelector("img");
+
+      const QUERY =
+        "UPDATE artists" +
+        ` SET name=?,` +
+        ` last_title=?,` +
+        ` last_img=?,` +
+        ` updated=?` +
+        ` WHERE url=?`;
+      //情報を更新する
+      const connection = mysql2.createConnection(DB_SETTING);
+      connection.connect();
+      await new Promise((resolve) => {
+        connection
+          .execute(QUERY, [
+            author ?? "undefined",
+            title ?? "undefined",
+            el_thumbnail?.getAttribute("data-src") ?? "undefined",
+            dayjs().format("YYYY-MM-DD HH:MM:ss"),
+            page.url,
+          ])
+          .on("end", () => {
+            console.log(`${page.url} update end`);
+            resolve(undefined);
+          });
       });
-  });
+      return;
+    }
+  }
+  console.log(`${page.url} no japanese`);
 }
-
-//Promiceを遅延実行する
-// async function updatePageLazy(page: Page, ms: number) {
-//   // await updatePageInfo(page);
-//   console.log(dayjs().format("mm:ss"));
-//   await new Promise((resolve) => setTimeout(resolve, ms));
-// }
 
 export default router;
