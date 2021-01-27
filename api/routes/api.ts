@@ -243,8 +243,8 @@ async function updatePageInfo(page: Page) {
     const document = new JSDOM(res_book.data).window.document;
 
     //言語を取得
-    const language = document.querySelector("h2.title span.after")?.textContent;
-    if (language === "") {
+    const language = document.querySelector("section#tags")?.textContent;
+    if (language?.includes("japanese")) {
       //日本語である
       //タイトルを取得
       const title = document.querySelector("h2.title span.pretty")?.textContent;
