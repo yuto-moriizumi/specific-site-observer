@@ -33,9 +33,7 @@ router.get("/pages", (req, res) => {
   connection.connect();
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   connection
-    .query(
-      "SELECT name, url, last_title as title, last_img as img, updated FROM artists"
-    )
+    .query("SELECT name, url, last_title as title, last_img as img, updated FROM artists")
     .on("result", (row) => data.push(row))
     .on("end", () => {
       res.send(data);
@@ -78,10 +76,10 @@ router.get("/subscriptions", checkJwt, (req, res) => {
   connection.connect();
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   const QUERY =
-    "SELECT name, `url`, `last_title` as `title`, `last_img` as `img`, `updated`, `rank` as `rating`, `has_new` FROM artists NATURAL JOIN subscriptions " +
-    `WHERE user_id='${req.user.sub}' ORDER BY rating DESC`;
+    "SELECT name, url, last_title as title, last_img as img, updated, `rank` as rating, has_new FROM artists NATURAL JOIN subscriptions" +
+    " WHERE user_id=? ORDER BY rating DESC";
   connection
-    .query(QUERY)
+    .execute(QUERY, [req.user.sub])
     .on("result", (row) => data.push(row))
     .on("end", () => res.send(data))
     .on("error", (err) => console.log(err, QUERY));
@@ -100,7 +98,7 @@ router.post("/subscriptions", checkJwt, (req, res) => {
   const connection = mysql2.createConnection(DB_SETTING);
   connection.connect();
   connection
-    .query("INSERT IGNORE INTO artists" + `(url) VALUES ('${req.body.url}')`)
+    .execute("INSERT IGNORE INTO artists" + `(url) VALUES (?)`, [req.body.url])
     .on("error", (err) => {
       console.log(err);
       res.status(500).send();
@@ -114,12 +112,10 @@ router.post("/subscriptions", checkJwt, (req, res) => {
         new Promise((fulfilled) => {
           //購読を追加する
           const QUERY =
-            "INSERT IGNORE INTO subscriptions" +
-            " (`user_id`, `url`, `rank`, `has_new`)" +
-            ` VALUES ('${user_id}', '${req.body.url}', ${req.body.star}, 1)`;
+            "INSERT IGNORE INTO subscriptions (user_id, url, `rank`, has_new) VALUES (?, ?, ?, 1)";
           console.log(QUERY);
           connection
-            .query(QUERY)
+            .execute(QUERY, [user_id, req.body.url, req.body.star])
             .on("error", (err) => {
               console.log(err);
               res.status(500).send();
@@ -138,15 +134,15 @@ router.post("/subscriptions/new", checkJwt, (req, res) => {
   }
   console.log(`USER_ID:${req.user.sub}, BODY:${req.body}`);
 
-  //SQLインジェクションの危険性あり
   //既読を切り替える
   const connection = mysql2.createConnection(DB_SETTING);
   connection.connect();
   connection
-    .query(
-      "UPDATE subscriptions" +
-        ` SET has_new=${req.body.has_new} WHERE user_id='${req.user.sub}' AND url='${req.body.url}'`
-    )
+    .execute("UPDATE subscriptions SET has_new=? WHERE user_id=? AND url=?", [
+      req.body.has_new,
+      req.user.sub,
+      req.body.url,
+    ])
     .on("end", () => res.status(201).send());
 });
 
@@ -158,15 +154,18 @@ router.post("/subscriptions/rank", checkJwt, (req, res) => {
   }
   console.log(`USER_ID:${req.user.sub}`);
 
-  //SQLインジェクションの危険性あり
   //ランクを変更する
-  const QUERY =
-    "UPDATE subscriptions" +
-    ` SET rank=${req.body.rank} WHERE user_id='${req.user.sub}' AND url='${req.body.url}'`;
+  const QUERY = "UPDATE subscriptions SET `rank`=? WHERE user_id=? AND url=?";
   console.log(QUERY);
   const connection = mysql2.createConnection(DB_SETTING);
   connection.connect();
-  connection.query(QUERY).on("end", () => res.status(201).send());
+  connection
+    .execute(QUERY, [req.body.rank, req.user.sub, req.body.url])
+    .on("error", (e) => {
+      console.log(e);
+      res.status(500).send();
+    })
+    .on("end", () => res.status(201).send());
 });
 
 //既読を削除する
@@ -182,17 +181,12 @@ router.post("/subscriptions/delete", checkJwt, (req, res) => {
   const connection = mysql2.createConnection(DB_SETTING);
   connection.connect();
   connection
-    .query(
-      "DELETE FROM subscriptions" +
-        ` WHERE user_id='${req.user.sub}' AND url='${req.body.url}'`
-    )
+    .execute("DELETE FROM subscriptions WHERE user_id=? AND url=?", [req.user.sub, req.body.url])
     .on("end", () => res.status(201).send());
 
   //購読のないページを削除する
   connection
-    .query(
-      "DELETE FROM artists WHERE NOT url IN (SELECT url FROM subscriptions)"
-    )
+    .query("DELETE FROM artists WHERE NOT url IN (SELECT url FROM subscriptions)")
     .on("error", (err) => {
       console.log(err);
     });
@@ -256,23 +250,16 @@ async function updatePageInfo(page: Page) {
       }
 
       //作者を取得
-      const author = document.querySelector("h2.title span.before")
-        ?.textContent;
+      const author = document.querySelector("h2.title span.before")?.textContent;
 
       //サムネイルのエレメントを取得
       const el_thumbnail = book.querySelector("img");
 
-      const QUERY =
-        "UPDATE artists" +
-        ` SET name=?,` +
-        ` last_title=?,` +
-        ` last_img=?,` +
-        ` updated=?` +
-        ` WHERE url=?`;
       //情報を更新する
       const connection = mysql2.createConnection(DB_SETTING);
       connection.connect();
-      await new Promise((resolve) => {
+      await new Promise((resolve, reject) => {
+        const QUERY = "UPDATE artists SET name=?, last_title=?, last_img=?, updated=? WHERE url=?";
         connection
           .execute(QUERY, [
             author ?? "undefined",
@@ -281,11 +268,19 @@ async function updatePageInfo(page: Page) {
             dayjs().format("YYYY-MM-DD HH:MM:ss"),
             page.url,
           ])
-          .on("end", () => {
-            console.log(`${page.url} update end`);
-            resolve(undefined);
-          });
-      });
+          .on("end", resolve)
+          .on("error", (e) => reject(e));
+      })
+        .then(() =>
+          connection
+            .execute("UPDATE subscriptions SET has_new=1 WHERE url=?", [page.url])
+            .on("end", () => {
+              console.log(`${page.url} update end`);
+            })
+        )
+        .catch((e: mysql2.QueryError) => {
+          console.log(e);
+        });
       return;
     }
   }
