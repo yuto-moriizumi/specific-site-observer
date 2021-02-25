@@ -42,4 +42,4 @@ app.use((err: any, req: Express.Request, res: Express.Response) => {
   res.render("error");
 });
 
-export = app;
+export default app;
