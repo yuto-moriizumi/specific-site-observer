@@ -200,9 +200,7 @@ class MyPage extends React.Component<Props, State> {
           },
         }
       )
-      .then(() => {
-        // console.log(this.state.subscriptions[index].title, rate);
-      })
+      .then(() => this.getSubscriptions()) //サーバから最新情報を取得
       .catch((err) => console.log(err));
   }
 
