@@ -1,4 +1,4 @@
-const { createProxyMiddleware } = require("http-proxy-middleware");
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
 // var restream = function (proxyReq, req, res, options) {
 //   if (req.body) {
@@ -12,11 +12,11 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 // };
 
 module.exports = function (app) {
-  // app.use(
-  //   createProxyMiddleware("/api/*", {
-  //     target: "http://localhost:3001",
-  //     changeOrigin: true,
-  //     // onProxyReq: restream,
-  //   })
-  // );
+    // app.use(
+    //   createProxyMiddleware("/api/*", {
+    //     target: "http://localhost:3001",
+    //     changeOrigin: true,
+    //     // onProxyReq: restream,
+    //   })
+    // );
 };
