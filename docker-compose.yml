@@ -1,22 +1,18 @@
 version: "3"
 services:
   front:
-    image: node:14.15.4-buster-slim
-    container_name: front-container
-    hostname: front-container
+    image: node:14
     volumes:
       - ./front:/usr/src
       - front_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
     working_dir: "/usr/src"
     command: sh -c "yarn install && yarn start"
     ports:
-      - "4000:4000"
+      - "80:80"
     environment:
       REACT_APP_SERVER_URL: "http://localhost:3000"
   api:
-    image: node:14.15.4-buster-slim
-    container_name: api-container
-    hostname: api-container
+    image: node:14
     volumes:
       - ./api/:/usr/src/
       - api_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
@@ -29,12 +25,7 @@ services:
       RDS_USERNAME: "root"
       RDS_PASSWORD: "docker"
       RDS_DB_NAME: "mydb"
-      # RDS_HOSTNAME: "database-1.ccpa8wimqepc.ap-northeast-1.rds.amazonaws.com"
-      # RDS_USERNAME: "admin"
-      # RDS_PASSWORD: "mriz1112"
-      # RDS_DB_NAME: "mydb"
-      #https://ap-northeast-1.console.aws.amazon.com/rds/home?region=ap-northeast-1#dbinstances:id=aamhypdnk5fpnb
-      CLIENT_ORIGIN_URL: "http://localhost:4000"
+      CLIENT_ORIGIN_URL: "http://localhost"
     command: sh -c "yarn install && yarn dev"
     depends_on:
       - db

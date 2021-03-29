@@ -6,7 +6,7 @@ import "rc-rate/assets/index.css";
 import App from "./App";
 import { BrowserRouter as Router } from "react-router-dom";
 import Auth0ProviderWithHistory from "./components/Auth0ProviderWithHistory";
-import enableMock from "./utils/mockApi";
+// import enableMock from "./utils/mockApi";
 
 // enableMock();
 ReactDOM.render(

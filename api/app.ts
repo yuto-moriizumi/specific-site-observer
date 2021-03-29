@@ -42,4 +42,5 @@ app.use((err: any, req: Express.Request, res: Express.Response) => {
   res.render("error");
 });
 
+module.exports = app;
 export default app;
