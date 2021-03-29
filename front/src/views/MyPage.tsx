@@ -16,6 +16,7 @@ import Rate from "rc-rate";
 import axios from "axios";
 import { Auth0ContextInterface, withAuth0 } from "@auth0/auth0-react";
 import dayjs from "dayjs";
+import getResponsiveElements from "../utils/getResponsiveElements";
 
 type Subscription = {
   name: string;
@@ -204,88 +205,6 @@ class MyPage extends React.Component<Props, State> {
       .catch((err) => console.log(err));
   }
 
-  private getCardsWithSeparator(subscriptions: Subscription[]) {
-    //カードをレスポンシブ対応させるために、キー付セパレータを混ぜたJSXの配列を生成する
-    const result = new Array<JSX.Element>();
-    let key = 0;
-    for (let i = 0; i < subscriptions.length; i++) {
-      const subscription = subscriptions[i];
-      if (i % 2 === 0)
-        result.push(
-          <div className="w-100 d-none d-sm-block d-md-none" key={key++}></div>
-        );
-      if (i % 3 === 0)
-        result.push(
-          <div className="w-100 d-none d-md-block d-lg-none" key={key++}></div>
-        );
-      if (i % 4 === 0)
-        result.push(
-          <div className="w-100 d-none d-lg-block d-xl-none" key={key++}></div>
-        );
-      if (i % 5 === 0)
-        result.push(
-          <div className="w-100 d-none d-xl-block" key={key++}></div>
-        );
-      result.push(
-        <Card key={i + subscription.url} className="mb-3">
-          <Card.Link href={subscription.url} target="_blank">
-            <Card.Img
-              variant="top"
-              src={subscription.img}
-              referrerPolicy="no-referrer"
-            />
-            <Card.Title className="pt-2 px-3 mb-0">
-              {subscription.title}
-            </Card.Title>
-          </Card.Link>
-          <Card.Body className="pt-2 pb-3">
-            <Card.Subtitle className="pb-1">{subscription.name}</Card.Subtitle>
-            <Rate
-              defaultValue={subscription.rating}
-              onChange={(rate) => {
-                this.onRateChange(i, rate);
-              }}
-            />
-            <Row className="no-gutters">
-              <Col xs={"auto"}>
-                {dayjs(subscription.updated).format("YYYY/MM/DD")}
-              </Col>
-              <Col xs={"auto"} className="ml-auto mr-1">
-                {subscription.has_new ? (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={this.onClickNew.bind(this, i)}
-                  >
-                    NEW
-                  </Button>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={this.onClickRead.bind(this, i)}
-                  >
-                    READ
-                  </Button>
-                )}
-              </Col>
-              <Col xs={"auto"}>
-                <Button
-                  size="sm"
-                  variant="outline-danger"
-                  onClick={this.onClickDelete.bind(this, i)}
-                >
-                  <FontAwesomeIcon icon={faTrashAlt} color="red" />
-                </Button>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
-      );
-    }
-    return result;
-  }
-
   render() {
     return (
       <React.Fragment>
@@ -347,7 +266,66 @@ class MyPage extends React.Component<Props, State> {
         </Modal>
         <Container fluid>
           <CardDeck className="no-gutters">
-            {this.getCardsWithSeparator(this.state.subscriptions)}
+            {getResponsiveElements(
+              this.state.subscriptions.map((subscription, i) => (
+                <Card key={i + subscription.url} className="mb-3">
+                  <Card.Link href={subscription.url} target="_blank">
+                    <Card.Img
+                      variant="top"
+                      src={subscription.img}
+                      referrerPolicy="no-referrer"
+                    />
+                    <Card.Title className="pt-2 px-3 mb-0">
+                      {subscription.title}
+                    </Card.Title>
+                  </Card.Link>
+                  <Card.Body className="pt-2 pb-3">
+                    <Card.Subtitle className="pb-1">
+                      {subscription.name}
+                    </Card.Subtitle>
+                    <Rate
+                      defaultValue={subscription.rating}
+                      onChange={(rate) => {
+                        this.onRateChange(i, rate);
+                      }}
+                    />
+                    <Row className="no-gutters">
+                      <Col xs={"auto"}>
+                        {dayjs(subscription.updated).format("YYYY/MM/DD")}
+                      </Col>
+                      <Col xs={"auto"} className="ml-auto mr-1">
+                        {subscription.has_new ? (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={this.onClickNew.bind(this, i)}
+                          >
+                            NEW
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={this.onClickRead.bind(this, i)}
+                          >
+                            READ
+                          </Button>
+                        )}
+                      </Col>
+                      <Col xs={"auto"}>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={this.onClickDelete.bind(this, i)}
+                        >
+                          <FontAwesomeIcon icon={faTrashAlt} color="red" />
+                        </Button>
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+              ))
+            )}
           </CardDeck>
         </Container>
       </React.Fragment>

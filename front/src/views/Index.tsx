@@ -1,15 +1,9 @@
 import React from "react";
-import {
-  Button,
-  Card,
-  CardDeck,
-  Col,
-  Container,
-  Jumbotron,
-} from "react-bootstrap";
+import { Button, Card, CardDeck, Container, Jumbotron } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
+import getResponsiveElements from "../utils/getResponsiveElements";
 
 type Page = {
   name: string;
@@ -56,28 +50,28 @@ export default class Index extends React.Component<{}, State> {
         <Container fluid className="px-5">
           <h2 className="h1 mb-3">更新情報</h2>
           <CardDeck className="no-gutters">
-            {this.state.pages.map((page: Page) => (
-              <Col key={page.url} xs={12} sm={6} md={4} lg={3} xl={2}>
-                <Card>
+            {getResponsiveElements(
+              this.state.pages.map((page: Page) => (
+                <Card key={page.url} className="mb-3">
                   <Card.Link href={page.url} target="_blank" rel="noreferrer">
                     <Card.Img
                       variant="top"
                       src={page.img}
                       referrerPolicy="no-referrer"
                     />
-                    <Card.Body className="px-3 py-2">
-                      <Card.Title className="mb-1">{page.title}</Card.Title>
-                    </Card.Body>
+                    <Card.Title className="pt-2 px-3 mb-0">
+                      {page.title}
+                    </Card.Title>
                   </Card.Link>
-                  <Card.Subtitle className="px-3 pb-2">
-                    {page.name}
-                  </Card.Subtitle>
+                  <Card.Body className="pt-2 pb-3">
+                    <Card.Subtitle>{page.name}</Card.Subtitle>
+                  </Card.Body>
                   <Card.Footer>
                     {dayjs(page.updated).format("YYYY/MM/DD")}
                   </Card.Footer>
                 </Card>
-              </Col>
-            ))}
+              ))
+            )}
           </CardDeck>
         </Container>
       </React.Fragment>

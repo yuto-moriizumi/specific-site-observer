@@ -33,7 +33,9 @@ router.get("/pages", (req, res) => {
   connection.connect();
   const data: (mysql2.RowDataPacket | mysql2.OkPacket)[] = [];
   connection
-    .query("SELECT name, url, last_title as title, last_img as img, updated FROM artists")
+    .query(
+      "SELECT name, url, last_title as title, last_img as img, updated FROM artists ORDER BY updated DESC"
+    )
     .on("result", (row) => data.push(row))
     .on("end", () => {
       res.send(data);
