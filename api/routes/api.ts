@@ -212,8 +212,8 @@ router.get("/pages/update", (req, res) => {
       for (const page of pages) {
         await updatePageInfo(page);
       }
+      res.send();
     });
-  res.status(202).send();
 });
 
 //指定したページの情報を取得し、DBを更新します
@@ -286,5 +286,21 @@ async function updatePageInfo(page: Page) {
   }
   console.log(`${page.url} no japanese`);
 }
+
+//テストエンドポイント
+router.get("/test", async (req, res) => {
+  console.log("WELCOME TO TEST ENDPOINT");
+  for (let i = 0; i < 10; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log(`THEY LEFT TEST ENDPOINT ${i + 1}s before`);
+  }
+  res.status(200).send("WELCOME TO TEST ENDPOINT");
+  console.log("HOGEHOGE 1");
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  console.log("HOGEHOGE 2");
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  console.log("HOGEHOGE 3");
+  setTimeout(() => console.log("HOGEHOGE 4"), 1000);
+});
 
 export default router;
