@@ -21,10 +21,10 @@ services:
       - "3000:3000"
     environment:
       TZ: "Asia/Tokyo"
-      RDS_HOSTNAME: "db"
-      RDS_USERNAME: "root"
-      RDS_PASSWORD: "docker"
-      RDS_DB_NAME: "mydb"
+      RDS_HOSTNAME: $RDS_HOSTNAME
+      RDS_USERNAME: $RDS_USERNAME
+      RDS_PASSWORD: $RDS_PASSWORD
+      RDS_DB_NAME: $RDS_DB_NAME
       CLIENT_ORIGIN_URL: "http://localhost"
     command: sh -c "yarn install && yarn dev"
     depends_on:
