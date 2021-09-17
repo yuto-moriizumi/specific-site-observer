@@ -318,6 +318,7 @@ class MyPage extends React.Component<Props, State> {
                       <Card.Subtitle className="pb-1">
                         {subscription.name}
                       </Card.Subtitle>
+                      <Card.Text>{subscription.url.substr(0, 100)}</Card.Text>
                       <Rate
                         defaultValue={subscription.rating}
                         onChange={(rate) => {
