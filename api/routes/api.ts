@@ -3,6 +3,7 @@ import express from 'express';
 import jwt from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
 import mysql2 from 'mysql2';
+import mysql2p from 'mysql2/promise';
 import { JSDOM } from 'jsdom';
 import dayjs from 'dayjs';
 import { URL } from 'url';
@@ -185,7 +186,7 @@ router.post('/subscriptions/rank', checkJwt, (req, res) => {
 });
 
 //既読を削除する
-router.post('/subscriptions/delete', checkJwt, (req, res) => {
+router.post('/subscriptions/delete', checkJwt, async (req, res) => {
   if (!req.user) {
     res.status(403).send({
       error: 'token does not contain user information',
@@ -196,23 +197,25 @@ router.post('/subscriptions/delete', checkJwt, (req, res) => {
 
   //SQLインジェクションの危険性あり
   //既読を削除する
-  const connection = mysql2.createConnection(DB_SETTING);
-  connection.connect();
-  connection
-    .execute('DELETE FROM subscriptions WHERE user_id=? AND url=?', [
-      req.user.sub,
-      req.body.url,
-    ])
-    .on('end', () => res.status(201).send());
+  const connection = await mysql2p.createConnection(DB_SETTING);
+  await connection.connect();
+  await connection.execute(
+    'DELETE FROM subscriptions WHERE user_id=? AND url=?',
+    [req.user.sub, req.body.url]
+  );
 
   //購読のないページを削除する
-  connection
-    .query(
-      'DELETE FROM artists WHERE NOT url IN (SELECT url FROM subscriptions)'
-    )
-    .on('error', (err) => {
-      console.log(err);
-    });
+  try {
+    (async () => {
+      await connection.query(
+        'DELETE FROM artists WHERE NOT url IN (SELECT url FROM subscriptions)'
+      );
+    })();
+  } catch (error) {
+    console.error(error);
+  }
+
+  res.status(201).send();
 });
 
 type Page = {
@@ -232,14 +235,12 @@ router.get('/pages/update', (req, res) => {
     .on('result', (row) => pages.push(JSON.parse(JSON.stringify(row))))
     .on('end', async () => {
       console.log(`pages loaded, total ${pages.length}`);
-      try {
-        for (const page of pages) {
+      for (const page of pages) {
+        try {
           await updatePageInfo(page);
+        } catch (error) {
+          console.error(error);
         }
-      } catch (error) {
-        // if (!axios.isAxiosError(error)) return;
-        // console.log(error.config);
-        console.log(error);
       }
       res.send();
     });
@@ -277,73 +278,43 @@ async function updatePageInfo(page: Page) {
 
     //言語を取得
     const language = document.querySelector('section#tags')?.textContent;
-    if (language?.includes('japanese')) {
-      //日本語である
-      //タイトルを取得
-      const title = document.querySelector('h2.title span.pretty')?.textContent;
+    if (!language?.includes('japanese')) continue; //日本語でないなら次の本へ
 
-      //更新が無ければ何もしない
-      if (title === page.last_title) {
-        console.log(`${page.url} no update`);
-        return;
-      }
+    //タイトルを取得
+    const title = document.querySelector('h2.title span.pretty')?.textContent;
 
-      //作者を取得
-      const author = document.querySelector('h2.title span.before')
-        ?.textContent;
-
-      //サムネイルのエレメントを取得
-      const el_thumbnail = book.querySelector('img');
-
-      //情報を更新する
-      const connection = mysql2.createConnection(DB_SETTING);
-      connection.connect();
-      await new Promise((resolve, reject) => {
-        const QUERY =
-          'UPDATE artists SET name=?, last_title=?, last_img=?, updated=? WHERE url=?';
-        connection
-          .execute(QUERY, [
-            author ?? 'undefined',
-            title ?? 'undefined',
-            el_thumbnail?.getAttribute('data-src') ?? 'undefined',
-            dayjs().format('YYYY-MM-DD HH:MM:ss'),
-            page.url,
-          ])
-          .on('end', resolve)
-          .on('error', (e) => reject(e));
-      })
-        .then(() =>
-          connection
-            .execute('UPDATE subscriptions SET has_new=1 WHERE url=?', [
-              page.url,
-            ])
-            .on('end', () => {
-              console.log(`${page.url} update end`);
-            })
-        )
-        .catch((e: mysql2.QueryError) => {
-          console.log(e);
-        });
+    //更新が無ければ何もしない
+    if (title === page.last_title) {
+      console.log(`${page.url} no update`);
       return;
     }
+
+    //作者を取得
+    const author = document.querySelector('h2.title span.before')?.textContent;
+
+    //サムネイルのエレメントを取得
+    const el_thumbnail = book.querySelector('img');
+
+    //情報を更新する
+    const connection = await mysql2p.createConnection(DB_SETTING);
+    await connection.connect();
+
+    const QUERY =
+      'UPDATE artists SET name=?, last_title=?, last_img=?, updated=? WHERE url=?';
+    await connection.execute(QUERY, [
+      author ?? 'undefined',
+      title ?? 'undefined',
+      el_thumbnail?.getAttribute('data-src') ?? 'undefined',
+      dayjs().format('YYYY-MM-DD HH:MM:ss'),
+      page.url,
+    ]);
+    await connection.execute('UPDATE subscriptions SET has_new=1 WHERE url=?', [
+      page.url,
+    ]);
+    console.log(`${page.url} update end`);
+    return;
   }
   console.log(`${page.url} no japanese`);
 }
-
-//テストエンドポイント
-router.get('/test', async (req, res) => {
-  console.log('WELCOME TO TEST ENDPOINT');
-  for (let i = 0; i < 10; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log(`THEY LEFT TEST ENDPOINT ${i + 1}s before`);
-  }
-  res.status(200).send('WELCOME TO TEST ENDPOINT');
-  console.log('HOGEHOGE 1');
-  await new Promise((resolve) => setTimeout(resolve, 100));
-  console.log('HOGEHOGE 2');
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log('HOGEHOGE 3');
-  setTimeout(() => console.log('HOGEHOGE 4'), 1000);
-});
 
 export default router;
