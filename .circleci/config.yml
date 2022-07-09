@@ -37,7 +37,6 @@ jobs:
           root: .
           paths:
             - .
-- 
   deploy:
     executor: deploy_container
     steps:
