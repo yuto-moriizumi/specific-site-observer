@@ -26,6 +26,7 @@ services:
       RDS_PASSWORD: $RDS_PASSWORD
       RDS_DB_NAME: $RDS_DB_NAME
       CLIENT_ORIGIN_URL: "http://localhost"
+      CF_CLEARANCE: QH74zENxce0El1KnTF4l4CnsYVuLAFLz45AP9nAVq3c-1657370183-0-150
     command: sh -c "yarn install && yarn dev"
     depends_on:
       - db
