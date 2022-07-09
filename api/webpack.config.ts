@@ -1,4 +1,4 @@
-var nodeExternals = require('webpack-node-externals');
+import nodeExternals from 'webpack-node-externals';
 
 module.exports = {
     // モード値を production に設定すると最適化された状態で、
