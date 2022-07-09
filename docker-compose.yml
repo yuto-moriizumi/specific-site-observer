@@ -1,7 +1,7 @@
 version: "3"
 services:
   front:
-    image: node:14
+    image: node:16
     volumes:
       - ./front:/usr/src
       - front_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
@@ -12,7 +12,7 @@ services:
     environment:
       REACT_APP_SERVER_URL: "http://localhost:3000"
   api:
-    image: node:14
+    image: node:16
     volumes:
       - ./api/:/usr/src/
       - api_modules:/usr/src/node_modules #node_modulesはコンテナ内部で用意します
@@ -31,7 +31,6 @@ services:
       - db
   db:
     image: mysql:8
-    container_name: db-container
     ports:
       - "3306:3306"
     environment:
@@ -43,7 +42,6 @@ services:
   # compose up しないとphpmyadminに入れない(理由不明)
   phpmyadmin:
     image: phpmyadmin #fpmやalpineタグは別途httpサーバが必要
-    container_name: phpmyadmin
     environment:
       - PMA_ARBITRARY=1
       # - PMA_HOST=db
